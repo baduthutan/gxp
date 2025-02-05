@@ -28,6 +28,15 @@
                 <div class="col-sm-12">
                     <div class="card card-semi shadow">
                         <div class="card-body">
+                            @if (count($errors) > 0)
+                                    <div class="alert alert-warning font-weight-bold" role="alert">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                            @foreach ($errors->all() as $error)
+                                                {{ $error }}
+                                                <br>
+                                            @endforeach
+                                    </div>
+                                @endif 
                             <div class="section-title">
                                 <h1>Schedule List</h1>
                                 <div class="row" id="list_jadwal">
@@ -67,7 +76,7 @@
                                                         <div class="col-sm-12 col-md-2 text-center">
                                                             <button
                                                                 class="btn btn-secondary font-weight-bold choose-schedule"
-                                                                data-schedule-id="{{ $item->id }}"
+                                                                data-schedule="{{ $item }}"
                                                                 data-direction="departure"
                                                                 @if (!$item->is_available) onclick="show_swal('This schedule is unavailable. Please contact admin.')" @endif>
                                                                 Choose
@@ -126,7 +135,7 @@
                                                             <div class="col-sm-12 col-md-2 text-center">
                                                                 <button
                                                                     class="btn btn-secondary font-weight-bold choose-schedule"
-                                                                    data-schedule-id="{{ $item->id }}"
+                                                                    data-schedule="{{ $item }}"
                                                                     data-direction="return"
                                                                     @if (!$item->is_available) onclick="show_swal('This schedule is unavailable. Please contact admin.')" @endif>
                                                                     Choose
@@ -149,15 +158,15 @@
                                 <form id="bookingForm" method="post" action="/booking">
                                     @csrf
                                     <input type="hidden" name="booking_type" value="{{ $booking_type }}" />
-                                    <input type="hidden" name="departure_schedule_id" id="departure_schedule_id"
+                                    <input type="hidden" name="departure_schedule" id="departure_schedule"
                                         value="">
                                     <input type="hidden" name="date_departure" value="{{ $date_departure }}" />
-                                    <input type="hidden" name="passenger_adult" value="{{ $passanger_adult }}" />
-                                    <input type="hidden" name="passenger_baby" value="{{ $passanger_baby }}" />
+                                    <input type="hidden" name="passenger_adult" value="{{ $passenger_adult }}" />
+                                    <input type="hidden" name="passenger_baby" value="{{ $passenger_baby }}" />
                                     <input type="hidden" name="is_roundtrip" value="{{ $is_roundtrip }}" />
                                     @if ($is_roundtrip)
                                         <input type="hidden" name="date_departure" value="{{ $date_departure_2 }}" />
-                                        <input type="hidden" name="return_schedule_id" id="return_schedule_id"
+                                        <input type="hidden" name="return_schedule" id="return_schedule"
                                             value="">
                                     @endif
                                     <button type="submit" class="btn btn-primary font-weight-bold btn-block"> <i
@@ -186,7 +195,7 @@
 
         document.querySelectorAll('.choose-schedule').forEach(button => {
             button.addEventListener('click', () => {
-                const scheduleId = button.dataset.scheduleId;
+                const schedule = button.dataset.schedule;
                 const direction = button.dataset.direction;
 
                 if (direction === 'departure') {
@@ -202,7 +211,7 @@
                     button.classList.add('btn-info');
                     button.textContent = 'Chosen';
 
-                    document.getElementById('departure_schedule_id').value = scheduleId;
+                    document.getElementById('departure_schedule').value = schedule;
 
                 } else if (direction === 'return') {
                     const currentChosen = document.querySelector(
@@ -217,7 +226,7 @@
                     button.classList.add('btn-info');
                     button.textContent = 'Chosen';
 
-                    document.getElementById('return_schedule_id').value = scheduleId;
+                    document.getElementById('return_schedule').value = schedule;
                 }
             });
         });

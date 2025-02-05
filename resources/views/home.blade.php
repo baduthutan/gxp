@@ -55,14 +55,55 @@
                                                 </div>
                                             </div>
                                             <div class="col-sm-3">
-                                                <div class="form-group">
-                                                    <label for="from_master_sub_area_id"
-                                                        class="form-text font-weight-bold">From <small
+                                                <label for="from_master_sub_area_id"
+                                                    class="form-text font-weight-bold">From <small
+                                                        class="text-danger font-weight-bolder">*</small></label>
+                                                <select class="form-control select2" id="from_master_sub_area_id"
+                                                    name="from_master_sub_area_id"
+                                                    data-placeholder="Select from location" style="width: 100%;"
+                                                    required>
+                                                    <option value=""></option>
+                                                    @foreach ($master_area as $item)
+                                                        <optgroup label="{{ $item->name }}">
+                                                            @foreach ($item->master_sub_area as $subItem)
+                                                                <option value="{{ $subItem->id }}"
+                                                                    data-area-type="{{ $item->area_type }}"
+                                                                    data-master-area-id="{{ $subItem->master_area_id }}">
+                                                                    {{ $subItem->name }}</option>
+                                                            @endforeach
+                                                        </optgroup>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <label for="to_master_sub_area_id" class="form-text font-weight-bold">To
+                                                    <small class="text-danger font-weight-bolder">*</small></label>
+                                                <select class="form-control select2" id="to_master_sub_area_id"
+                                                    name="to_master_sub_area_id" data-placeholder="Select to location"
+                                                    disabled style="width: 100%;" required>
+                                                    <option value=""></option>
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <label for="date_departure"
+                                                    class="form-text font-weight-bold">Date<small
+                                                        class="text-danger font-weight-bolder">*</small></label>
+                                                <input type="text" class="form-control form-control-sm"
+                                                    id="date_departure" name="date_departure"
+                                                    placeholder="Departure / Arrival Date"
+                                                    value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required />
+                                            </div>
+                                            <div class="col-sm-3">
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div id="roundtrips_1" class="mt-5 mt-sm-0">
+                                                    <label for="from_master_sub_area_id_2"
+                                                        id="label_from_master_sub_area_id_2"
+                                                        class="form-text font-weight-bold">From (Return)<small
                                                             class="text-danger font-weight-bolder">*</small></label>
-                                                    <select class="form-control select2" id="from_master_sub_area_id"
-                                                        name="from_master_sub_area_id"
-                                                        data-placeholder="Select from location" style="width: 100%;"
-                                                        required>
+                                                    <select class="form-control select2" id="from_master_sub_area_id_2"
+                                                        name="from_master_sub_area_id_2"
+                                                        data-placeholder="Select from location" style="width: 100%;">
                                                         <option value=""></option>
                                                         @foreach ($master_area as $item)
                                                             <optgroup label="{{ $item->name }}">
@@ -75,111 +116,65 @@
                                                             </optgroup>
                                                         @endforeach
                                                     </select>
-
-                                                    <div id="roundtrips_1">
-                                                        <label for="from_master_sub_area_id_2"
-                                                            id="label_from_master_sub_area_id_2"
-                                                            class="form-text font-weight-bold">From <small
-                                                                class="text-danger font-weight-bolder">*</small></label>
-                                                        <select class="form-control select2" id="from_master_sub_area_id_2"
-                                                            name="from_master_sub_area_id_2"
-                                                            data-placeholder="Select from location" style="width: 100%;">
-                                                            <option value=""></option>
-                                                            @foreach ($master_area as $item)
-                                                                <optgroup label="{{ $item->name }}">
-                                                                    @foreach ($item->master_sub_area as $subItem)
-                                                                        <option value="{{ $subItem->id }}"
-                                                                            data-area-type="{{ $item->area_type }}"
-                                                                            data-master-area-id="{{ $subItem->master_area_id }}">
-                                                                            {{ $subItem->name }}</option>
-                                                                    @endforeach
-                                                                </optgroup>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="col-sm-3">
-                                                <div class="form-group">
-                                                    <label for="to_master_sub_area_id" class="form-text font-weight-bold">To
+                                                <div id="roundtrips_2">
+                                                    <label for="to_master_sub_area_id_2"
+                                                        id="label_to_master_sub_area_id_2"
+                                                        class="form-text font-weight-bold">To (Return)
                                                         <small class="text-danger font-weight-bolder">*</small></label>
-                                                    <select class="form-control select2" id="to_master_sub_area_id"
-                                                        name="to_master_sub_area_id" data-placeholder="Select to location"
-                                                        disabled style="width: 100%;" required>
+                                                    <select class="form-control select2" id="to_master_sub_area_id_2"
+                                                        name="to_master_sub_area_id_2"
+                                                        data-placeholder="Select to location" disabled
+                                                        style="width: 100%;">
                                                         <option value=""></option>
                                                     </select>
-
-                                                    <div id="roundtrips_2">
-                                                        <label for="to_master_sub_area_id_2"
-                                                            id="label_to_master_sub_area_id_2"
-                                                            class="form-text font-weight-bold">To
-                                                            <small class="text-danger font-weight-bolder">*</small></label>
-                                                        <select class="form-control select2" id="to_master_sub_area_id_2"
-                                                            name="to_master_sub_area_id_2"
-                                                            data-placeholder="Select to location" disabled
-                                                            style="width: 100%;">
-                                                            <option value=""></option>
-                                                        </select>
-                                                    </div>
                                                 </div>
                                                 <div class="alert alert-warning" role="alert" id="alert-charter"
-                                                    style="display: none;">
-                                                    <small>
-                                                        Private Charter for other destination, please send us your
-                                                        itinerary (date and time, from, to, visiting places if any,
-                                                        estimated visiting time) <a class="font-weight-bold text-success"
-                                                            href="https://wa.me/+12152718381?text=Please%20inform%20us%20the%20vehicle%20availability%20for%20charter.%20Travel%20itinerary%20as%20follows:%0ADate%20and%20time:%0ANumber%20of%20people:%0AFrom:%0ATo:%0AVisiting%20places%20(if%20any):%0AEstimated%20visiting%20time%20(if%20any):"
-                                                            target="_blank">Whatsapp message. <i
-                                                                class='fab fa-whatsapp'></i></a>
-                                                    </small>
-                                                </div>
+                                                style="display: none;">
+                                                <small>
+                                                    Private Charter for other destination, please send us your
+                                                    itinerary (date and time, from, to, visiting places if any,
+                                                    estimated visiting time) <a class="font-weight-bold text-success"
+                                                        href="https://wa.me/+12152718381?text=Please%20inform%20us%20the%20vehicle%20availability%20for%20charter.%20Travel%20itinerary%20as%20follows:%0ADate%20and%20time:%0ANumber%20of%20people:%0AFrom:%0ATo:%0AVisiting%20places%20(if%20any):%0AEstimated%20visiting%20time%20(if%20any):"
+                                                        target="_blank">Whatsapp message. <i
+                                                            class='fab fa-whatsapp'></i></a>
+                                                </small>
+                                            </div>
                                             </div>
                                             <div class="col-sm-3">
-                                                <div class="form-group">
-                                                    <label for="date_departure"
-                                                        class="form-text font-weight-bold">Departure
-                                                        or Arrival Date<small
+                                                <div id="roundtrips_3">
+                                                    <label for="date_departure_2" id="label_date_departure_2"
+                                                        class="form-text font-weight-bold">Date (Return)<small
                                                             class="text-danger font-weight-bolder">*</small></label>
-                                                    <input type="text" class="form-control form-control-sm"
-                                                        id="date_departure" name="date_departure"
+                                                    <input type="date" class="form-control form-control-sm"
+                                                        id="date_departure_2" name="date_departure_2"
                                                         placeholder="Departure / Arrival Date"
-                                                        value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required />
-
-                                                    <div id="roundtrips_3">
-                                                        <label for="date_departure_2" id="label_date_departure_2"
-                                                            class="form-text font-weight-bold">Departure
-                                                            or Arrival Date<small
-                                                                class="text-danger font-weight-bolder">*</small></label>
-                                                        <input type="date" class="form-control form-control-sm"
-                                                            id="date_departure_2" name="date_departure_2"
-                                                            placeholder="Departure / Arrival Date"
-                                                            value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" />
-                                                    </div>
-
-                                                    <small id="booking-info" class="form-text text-muted">Booking within
-                                                        one day before
-                                                        departure / arrival date please call us or send
-                                                        <a class="font-weight-bold text-success"
-                                                            href="https://wa.me/+12152718381?text=Please%20inform%20us%20the%20vehicle%20availability%20for%20charter.%20Travel%20itinerary%20as%20follows:%0ADate%20and%20time:%0ANumber%20of%20people:%0AFrom:%0ATo:%0AVisiting%20places%20(if%20any):%0AEstimated%20visiting%20time%20(if%20any):"
-                                                            target="_blank">Whatsapp message. <i
-                                                                class='fab fa-whatsapp'></i></a>
-                                                    </small>
+                                                        value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" />
                                                 </div>
+                                                <small id="booking-info" class="form-text text-muted">Booking within
+                                                    one day before
+                                                    departure / arrival date please call us or send
+                                                    <a class="font-weight-bold text-success"
+                                                        href="https://wa.me/+12152718381?text=Please%20inform%20us%20the%20vehicle%20availability%20for%20charter.%20Travel%20itinerary%20as%20follows:%0ADate%20and%20time:%0ANumber%20of%20people:%0AFrom:%0ATo:%0AVisiting%20places%20(if%20any):%0AEstimated%20visiting%20time%20(if%20any):"
+                                                        target="_blank">Whatsapp message. <i
+                                                            class='fab fa-whatsapp'></i></a>
+                                                </small>
 
                                                 <input type="hidden" name="is_roundtrip" value="0">
                                                 <input type="checkbox" id="is_roundtrip" name="is_roundtrip"
                                                     value="1">
                                                 <label for="is_roundtrip">Round Trip</label>
                                             </div>
-
                                             <div class="col-sm-6 passenger_adult_input">
                                                 <div class="form-group">
-                                                    <label for="passanger_adult" class="form-text font-weight-bold">Adult
-                                                        Passangers <small
+                                                    <label for="passenger_adult" class="form-text font-weight-bold">Adult
+                                                        passengers <small
                                                             class="text-danger font-weight-bolder">*</small></label>
                                                     <div class="input-group">
-                                                        <select class="form-control" id="passanger_adult"
-                                                            name="passanger_adult" required>
+                                                        <select class="form-control" id="passenger_adult"
+                                                            name="passenger_adult" required>
                                                             @for ($i = 1; $i <= 20; $i++)
                                                                 <option value="{{ $i }}">{{ $i }}
                                                                 </option>
@@ -193,12 +188,12 @@
                                             </div>
                                             <div class="col-sm-6 passenger_baby_input">
                                                 <div class="form-group">
-                                                    <label for="passanger_baby" class="form-text font-weight-bold">Child
-                                                        Passangers <small
+                                                    <label for="passenger_baby" class="form-text font-weight-bold">Child
+                                                        passengers <small
                                                             class="text-danger font-weight-bolder">*</small></label>
                                                     <div class="input-group">
-                                                        <select class="form-control" id="passanger_baby"
-                                                            name="passanger_baby" required>
+                                                        <select class="form-control" id="passenger_baby"
+                                                            name="passenger_baby" required>
                                                             @for ($i = 0; $i <= 20; $i++)
                                                                 <option value="{{ $i }}">{{ $i }}
                                                                 </option>
@@ -254,8 +249,6 @@
                 $("#from_master_sub_area_id_2").attr("required", "required");
                 $("#to_master_sub_area_id_2").attr("required", "required");
                 $("#date_departure_2").attr("required", "required");
-
-                document.getElementById('booking-info').style.display = 'none';
             } else {
                 $("#roundtrips_1").hide();
                 $("#roundtrips_2").hide();
@@ -266,8 +259,6 @@
                 $("#from_master_sub_area_id_2").removeAttr("required");
                 $("#to_master_sub_area_id_2").removeAttr("required");
                 $("#date_departure_2").removeAttr("required");
-
-                document.getElementById('booking-info').style.display = 'block';
             }
         });
     </script>

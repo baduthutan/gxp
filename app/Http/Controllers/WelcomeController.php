@@ -548,15 +548,12 @@ class WelcomeController extends Controller
         $data = [
             'title' => config('app.name'),
             'app_name' => config('app.name'),
-            // 'master_area' => $master_area,
-            // 'arrival_area' => $arrival_area,
-            // 'request' => $request,
             'schedule' => $schedule,
             'return_schedule' => $return_schedule,
             'pages' => Page::all(),
             'is_roundtrip' => $request->is_roundtrip,
-            'passanger_adult' => $request->passanger_adult,
-            'passanger_baby' => $request->passanger_baby,
+            'passenger_adult' => $request->passenger_adult,
+            'passenger_baby' => $request->passenger_baby,
             'booking_type' => $request->booking_type,
             'date_departure' => $request->date_departure,
             'date_departure_2' => $request->date_departure_2
@@ -596,120 +593,93 @@ class WelcomeController extends Controller
 
     public function booking(Request $request)
     {
-        dd($request->all());
+        $request->validate([
+            'departure_schedule' => 'required|json',
+        ]);
+        // dd($request->all());
+        $departure_schedule = json_decode($request->departure_schedule);
+        
+
+        // Access nested data
+        $from_master_area = $departure_schedule->from_master_area->name;
+        $from_master_sub_area = $departure_schedule->from_master_sub_area->name ?? '';
+        $from_type = $departure_schedule->from_master_area->area_type;
+        $to_master_area = $departure_schedule->to_master_area->name;
+        $to_master_sub_area = $departure_schedule->to_master_sub_area->name ?? '';
+        $base_price = $departure_schedule->price;
+        $luggage_price = $departure_schedule->luggage_price;
+
         $pages = Page::get();
-
-        $from_type = $request->from_type;
-
-        $from_master_area_id = $request->from_master_area_id;
-        $from_master_sub_area_id = $request->from_master_sub_area_id;
-        $to_master_area_id = $request->to_master_area_id;
-        $to_master_sub_area_id = $request->to_master_sub_area_id;
-
-        $return_from_master_area_id = $request->from_master_area_id;
-        $return_from_master_sub_area_id = $request->from_master_sub_area_id;
-        $return_to_master_area_id = $request->to_master_area_id;
-        $return_to_master_sub_area_id = $request->to_master_sub_area_id;
 
         $booking_type = $request->booking_type;
         $date_departure = $request->date_departure;
         $is_roundtrip = $request->is_roundtrip;
-        $passanger_adult = empty($request->passanger_adult) ? 1 : $request->passanger_adult;
-        $passanger_baby = empty($request->passanger_baby) ? 0 : $request->passanger_baby ;
-        $schedule_id = $request->departure_schedule_id;
-        $return_schedule_id = $request->return_schedule_id ?? ''; 
+        $passenger_adult = $request->passenger_adult ?? 1;
+        $passenger_baby = $request->passenger_baby ?? 0;
+
+        if($is_roundtrip == 1){
+            $request->validate([
+                'return_schedule' => 'required|json',
+            ]);
+            $return_schedule = json_decode($request->return_schedule) ?? '';
+            $return_from_master_area = $return_schedule->from_master_area->name;
+            $return_from_master_sub_area = $return_schedule->from_master_sub_area->name ?? '';
+            $return_from_type = $return_schedule->from_master_area->area_type;
+            $return_to_master_area = $return_schedule->to_master_area->name;
+            $return_to_master_sub_area = $return_schedule->to_master_sub_area->name ?? '';
+            $base_price = $departure_schedule->price + $return_schedule->price;
+            $return_luggage_price = $return_schedule->luggage_price;
+            $date_return = $request->date_departure_2;
+        }
 
         session([
             'from_type' => $from_type,
-            'from_master_area_id' => $from_master_area_id,
-            'from_master_sub_area_id' => $from_master_sub_area_id,
-            'to_master_area_id' => $to_master_area_id,
-            'to_master_sub_area_id' => $to_master_sub_area_id,
+            'from_master_area' => $from_master_area,
+            'from_master_sub_area' => $from_master_sub_area,
+            'to_master_area' => $to_master_area,
+            'to_master_sub_area' => $to_master_sub_area,
             'booking_type' => $booking_type,
             'date_departure' => $date_departure,
-            'passanger_adult' => $passanger_adult,
-            'passanger_baby' => $passanger_baby,
-            'schedule_id' => $schedule_id,
-            'return_schedule_id' => $return_schedule_id,
+            'passenger_adult' => $passenger_adult,
+            'passenger_baby' => $passenger_baby,
             'is_roundtrip' => $is_roundtrip
         ]);
 
-        if ($booking_type == "shuttle") {
-            $schedule = ScheduleShuttle::where('is_active', true)->where('id', $departure_schedule_id)->first();
-            $base_price = $schedule->price;
-            $luggage_price = $schedule->luggage_price;
+        if ($booking_type == "shuttle") {  
             $datetime_format = 'Y M d h:i A';
-            if($is_roundtrip == 1){
-                $return_schedule = ScheduleShuttle::where('is_active', true)->where('id', $return_schedule_id)->first();
-                $base_price = $return_schedule->price;
-                $luggage_price = $return_schedule->luggage_price;
-            }
         } else {
-            // $schedule = Charter::where('is_available', true)->where('id', $schedule_id)->first();
-            $schedule = Charter::where('id', $schedule_id)->first();
-            $base_price = $schedule->price;
-            $luggage_price = 0;
             $datetime_format = 'Y M d';
-            if($is_roundtrip == 1){
-                $return_schedule = Charter::where('id', $return_schedule_id)->first();
-                $base_price = $return_schedule->price;
-                $luggage_price = $return_schedule->luggage_price;
-            }
         }
 
-        if (!$schedule) {
-            $data = [
-                'title' => 'Booking Check',
-                'app_name' => env('APP_NAME'),
-                'pages' => $pages,
-            ];
-            return view('schedule_not_found', $data);
-        } else {
-            $dst = Dst::first();
-            $timeDeparture = \Carbon\Carbon::parse($schedule->time_departure);
-            if (\Carbon\Carbon::parse($request->date_departure)->between($dst->dst_start, $dst->dst_end)) {
-                if ($timeDeparture->hour < 12) {
-                    $timeDeparture->addMinutes($dst->morning_schedule_time);
-                } else {
-                    $timeDeparture->addMinutes($dst->afternoon_schedule_time);
-                }
+        $dst = Dst::first();
+        $timeDeparture = \Carbon\Carbon::parse($departure_schedule->time_departure);
+        if (\Carbon\Carbon::parse($request->date_departure)->between($dst->dst_start, $dst->dst_end)) {
+            if ($timeDeparture->hour < 12) {
+                $timeDeparture->addMinutes($dst->morning_schedule_time);
+            } else {
+                $timeDeparture->addMinutes($dst->afternoon_schedule_time);
             }
-            $schedule->time_departure = $timeDeparture->format('H:i');
         }
-
-        if ($from_type == "airport") {
-            $from_main_name = MasterArea::where('id', $from_master_area_id)->first()->name;
-
-            $arr_master_sub_area = MasterSubArea::where('id', $from_master_sub_area_id)->first();
-            $from_sub_name = ($arr_master_sub_area) ? $arr_master_sub_area->name : "";
-
-            $to_main_name = MasterArea::where('id', $to_master_area_id)->first()->name;
-            $to_sub_name = MasterSubArea::where('id', $to_master_sub_area_id)->first()->name;
-
-            $date_time_departure = Carbon::parse($date_departure . " " . $schedule->time_departure)->format($datetime_format);
-
-            $special_areas = MasterSpecialArea::where('is_active', true)->where('master_sub_area_id', $schedule->to_master_sub_area_id)->orderBy('regional_name', 'asc')->get();
-        } elseif ($from_type == "city") {
-            $from_main_name = MasterArea::where('id', $from_master_area_id)->first()->name;
-
-            $arr_master_sub_area = MasterSubArea::where('id', $from_master_sub_area_id)->first();
-            $from_sub_name = ($arr_master_sub_area) ? $arr_master_sub_area->name : "";
-
-            $to_main_name = MasterArea::where('id', $to_master_area_id)->first()->name;
-
-            $arr_master_sub_area = MasterSubArea::where('id', $to_master_sub_area_id)->first();
-            $to_sub_name = ($arr_master_sub_area) ? $arr_master_sub_area->name : "";
-
-            $date_time_departure = Carbon::parse($date_departure . " " . $schedule->time_departure)->format($datetime_format);
-
-            $special_areas = MasterSpecialArea::where('is_active', true)->where('master_sub_area_id', $schedule->from_master_sub_area_id)->orderBy('regional_name', 'asc')->get();
+        $departure_schedule->time_departure = $timeDeparture->format('H:i');
+        $date_time_departure = Carbon::parse($date_departure . " " . $departure_schedule->time_departure)->format($datetime_format);
+        if ($from_type == "airport") {      
+            $special_areas = MasterSpecialArea::where('is_active', true)
+                ->where('master_sub_area_id', $departure_schedule->to_master_sub_area->id)
+                ->orderBy('regional_name', 'asc')
+                ->get();
+        } elseif ($from_type == "city") {  
+            $special_areas = MasterSpecialArea::where('is_active', true)
+                ->where('master_sub_area_id', $departure_schedule->from_master_sub_area->id)
+                ->orderBy('regional_name', 'asc')
+                ->get();
         } else {
             $special_areas = collect([]);
         }
-
-        $destination_type = MasterArea::where('id', $to_master_area_id)->first();
-        $passanger_total = $passanger_adult + $passanger_baby;
-        $base_price_total = $base_price * $passanger_total;
+        
+        $destination_type = MasterArea::where('id', $departure_schedule->to_master_area->id)->first();
+        $passenger_total = $passenger_adult + $passenger_baby;
+        $base_price_total = $base_price * $passenger_total;
+        
 
         $pajak = env('PAJAK');
         if(empty($pajak)){
@@ -721,37 +691,36 @@ class WelcomeController extends Controller
         $data = [
             'title'               => env('APP_NAME'),
             'app_name'            => env('APP_NAME'),
-            'request'             => $request,
+            'booking_type'        => $booking_type,
             'pages'               => $pages,
-            'schedule'            => $schedule,
             'special_areas'       => $special_areas,
-            'from_main_name'      => $from_main_name,
-            'from_sub_name'       => $from_sub_name,
-            'to_main_name'        => $to_main_name,
-            'to_sub_name'         => $to_sub_name,
-            'destination_type'    => $destination_type->area_type,
+            'from_type'           => $from_type,
+            'from_main_name'      => $from_master_area,
+            'from_sub_name'       => $from_master_sub_area,
+            'to_main_name'        => $to_master_area,
+            'to_sub_name'         => $to_master_sub_area,
             'date_time_departure' => $date_time_departure,
-            'passanger_adult'     => $passanger_adult,
-            'passanger_baby'      => $passanger_baby,
-            'passanger_total'     => $passanger_total,
+            'passenger_adult'     => $passenger_adult,
+            'passenger_baby'      => $passenger_baby,
+            'passenger_total'     => $passenger_total,
             'base_price_total'    => $base_price_total,
             'luggage_price'       => $luggage_price,
             'pajak'               => $pajak,
-            'is_roundtrip'        => $request->all()['is_roundtrip'],
-            '_token' => $request->all()['_token'],
-            'from_type' => $request->all()['from_type'],
-            'booking_type' => $request->all()['booking_type'],
-            'from_master_sub_area_id' => $request->all()['from_master_sub_area_id'],
-            'to_master_sub_area_id' => $request->all()['to_master_sub_area_id'],
-            'date_departure' => $request->all()['date_departure'],
-            'passanger_adult' => $request->all()['passanger_adult'],
-            'passanger_baby' => $request->all()['passanger_baby'],
-            'flagged' => $request->all()['flagged'],
-            'code1' => $request->all()['code1'],
-            'from_master_sub_area_id_2' => $request->all()['from_master_sub_area_id_2'],
-            'to_master_sub_area_id_2' => $request->all()['to_master_sub_area_id_2'],
-            'date_departure_2' => $request->all()['date_departure_2'],
+            'is_roundtrip'        => $is_roundtrip,
+            // '_token' => $request->all()['_token'],
         ];
+        if($is_roundtrip == 1){
+            // Add return-specific data to $data array
+            $data = array_merge($data, [
+                'return_from_main_name' => $return_from_master_area,
+                'return_from_sub_name'  => $return_from_master_sub_area,
+                'return_from_type'      => $return_from_type,
+                'return_to_main_name'   => $return_to_master_area,
+                'return_to_sub_name'    => $return_to_master_sub_area,
+                'return_luggage_price'  => $return_luggage_price,
+                'date_return'           => $date_return,
+            ]);
+        }
 
         return view('booking', $data);
     }

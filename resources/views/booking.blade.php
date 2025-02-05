@@ -23,7 +23,7 @@
             <div class="row align-items-center">
                 <div class="col-md-12 mt-5">
                     <h1 class="text-center mt-5">
-                        @if ($request->booking_type == 'shuttle')
+                        @if ($booking_type == 'shuttle')
                             Booking Shuttle
                         @else
                             Booking Charter
@@ -33,7 +33,14 @@
             </div>
         </div>
     </section>
-
+    {{-- @if (session('booking_type') == 'shuttle' and empty($total_seat))
+        <div class="alert alert-warning font-weight-bold" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> This booking doesn't have any
+            available
+            seat at moment, Please contact admin, so that can immediately provide info when
+            seats are available.
+        </div>
+    @endif --}}
     <section id="booking" class="booking section-padding" data-scroll-index="1">
         <form id="form_booking">
             <div class="container-fluid">
@@ -41,56 +48,80 @@
                     <div class="col-sm-12 col-md-8 mb-5">
                         <div class="card shadow-lg">
                             <div class="card-body">
-                                @if (session('booking_type') == 'shuttle' and empty($schedule->total_seat))
-                                    <div class="alert alert-warning font-weight-bold" role="alert">
-                                        <i class="fas fa-exclamation-triangle"></i> This booking doesn't have any
-                                        available
-                                        seat at moment, Please contact admin, so that can immediately provide info when
-                                        seats are available.
-                                    </div>
-                                @endif
-                                <h5 class="text-center font-weight-bold mb-4">Order Data</h5>
+                                <h5 class="text-center font-weight-bold mb-4">Customer & Passenger Data</h5>
                                 <div class="row">
+                                    <!-- Customer Data Section -->
                                     <div class="col-sm-12 col-md-6">
                                         <div class="form-group">
-                                            <label for="customer_name" class="form-text font-weight-bold">Customer
-                                                Name<small class="text-danger font-weight-bolder">*</small></label>
-                                            <input type="text" class="form-control" id="customer_name"
-                                                name="customer_name" placeholder="Customer Name" />
+                                            <label for="customer_name" class="form-text font-weight-bold">
+                                                Customer Name
+                                                <small class="text-danger font-weight-bolder">*</small>
+                                            </label>
+                                            <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder="Customer Name" required />
                                         </div>
                                         <div class="form-group">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" value="1"
-                                                    id="same_passanger">
-                                                <label class="form-check-label" for="same_passanger">
-                                                    Passenger Name is the same with the Customer Name above
+                                                <input class="form-check-input" type="checkbox" value="1" id="same_passenger">
+                                                <label class="form-check-label" for="same_passenger">
+                                                    Passenger Name is the same as the Customer Name above
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="customer_phone" class="form-text font-weight-bold">Customer
-                                                Phone<small class="text-danger font-weight-bolder">*</small></label>
-                                            <input type="tel" class="" id="customer_phone" class="form-control"
-                                                name="customer_phone" placeholder="Customer Phone"
-                                                onkeypress="return onlyNumberKey(event)" />
+                                            <label for="customer_phone" class="form-text font-weight-bold">
+                                                Customer Phone
+                                                <small class="text-danger font-weight-bolder">*</small>
+                                            </label>
+                                            <input type="tel" id="customer_phone" class="form-control" name="customer_phone" placeholder="Customer Phone" required onkeypress="return onlyNumberKey(event)" />
                                             <span class="text-muted font-italic">
-                                                <small>
-                                                    Please fill in US phone number if available
-                                                </small>
+                                                <small>Please fill in US phone number if available</small>
                                             </span>
                                         </div>
-                                        <input type="hidden" class="form-control" id="customer_password"
-                                            name="customer_password" placeholder="Customer Password"
-                                            autocomplete="new-password" value="123456" />
+                                        <input type="hidden" class="form-control" id="customer_password" name="customer_password" autocomplete="new-password" value="123456" />
                                         <hr />
                                         <div class="form-group">
-                                            <label for="customer_email" class="form-text font-weight-bold">Customer
-                                                Email</label>
-                                            <input type="email" class="form-control" id="customer_email"
-                                                name="customer_email" placeholder="Customer Email" />
+                                            <label for="customer_email" class="form-text font-weight-bold">Customer Email</label>
+                                            <input type="email" class="form-control" id="customer_email" name="customer_email" placeholder="Customer Email" />
                                         </div>
                                         <hr />
-                                        @if ($destination_type == 'city')
+                                    </div>
+                                    <!-- Passenger Data Section -->
+                                    <div class="col-sm-12 col-md-6">
+                                        @for ($i = 1; $i <= $passenger_total; $i++)
+                                            <div class="form-group">
+                                                <label for="passenger_name_{{ $i }}" class="form-text font-weight-bold">
+                                                    Passenger Name {{ $i }}
+                                                    <small class="text-danger font-weight-bolder">*</small>
+                                                </label>
+                                                <input type="text" class="form-control" id="passenger_name_{{ $i }}" name="passenger_name[]" placeholder="Passenger Name" required />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="passenger_phone_{{ $i }}" class="form-text font-weight-bold">
+                                                    Passenger Phone {{ $i }}
+                                                    <small class="text-danger font-weight-bolder">*</small>
+                                                </label>
+                                                <input type="tel" class="form-control" id="passenger_phone_{{ $i }}" name="passenger_phone[]" placeholder="Passenger Phone" required onkeypress="return onlyNumberKey(event)" />
+                                                <span class="text-muted font-italic">
+                                                    <small>Please fill in US phone number if available</small>
+                                                </span>
+                                            </div>
+                                            <hr />
+                                        @endfor
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                        
+                        <br>
+                        <div class="card shadow-lg">
+                            <div class="card-body">
+                                @if($is_roundtrip == 1)
+                                <h5 class="text-center font-weight-bold mb-4">First Trip Detail</h5>
+                                @else
+                                <h5 class="text-center font-weight-bold mb-4">Order Detail</h5>
+                                @endif
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-6">
+                                        @if ($from_type == 'airport')
                                             <div class="form-group">
                                                 <label for="special_area_id" class="form-text font-weight-bold">Private Drop
                                                     Off (Optional)</label>
@@ -119,7 +150,7 @@
                                             </div>
                                         @endif
 
-                                        @if ($request->booking_type == 'shuttle')
+                                        @if ($booking_type == 'shuttle')
                                             <div class="form-group">
                                                 <label for="luggage_qty" class="form-text font-weight-bold">Luggage
                                                     Qty</label>
@@ -167,6 +198,8 @@
                                                 </div>
                                             </div>
                                         @endif
+                                    </div>
+                                    <div class="col-sm-12 col-md-6">
                                         <div class="form-group">
                                             <label for="flight_number" class="form-text font-weight-bold">Flight
                                                 Number</label>
@@ -177,7 +210,7 @@
                                             <label for="flight_info" class="form-text font-weight-bold">Flight
                                                 Info</label>
                                             <textarea class="form-control" id="flight_info" name="flight_info"
-                                                placeholder="Flight info ie: inform us your {{ $request->from_type == 'city' ? 'departure' : 'arrival' }} time or other info
+                                                placeholder="Flight info ie: inform us your {{ $from_type == 'city' ? 'departure' : 'arrival' }} time or other info
                                                 "></textarea>
                                         </div>
                                         <div class="form-group">
@@ -186,58 +219,144 @@
                                                 placeholder="Pick up time (for Charter Service).Put your other notes here "></textarea>
                                         </div>
                                     </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <br>
+                        @if($is_roundtrip == 1)
+                        <div class="card shadow-lg">
+                            <div class="card-body">
+                                <h5 class="text-center font-weight-bold mb-4">Second Trip Detail</h5>
+                                <div class="row">
                                     <div class="col-sm-12 col-md-6">
-                                        @for ($i = 1; $i <= $passanger_total; $i++)
+                                        @if ($return_from_type == 'airport')
                                             <div class="form-group">
-                                                <label for="passanger_name_{{ $i }}"
-                                                    class="form-text font-weight-bold">Passenger
-                                                    Name {{ $i }}<small
-                                                        class="text-danger font-weight-bolder">*</small></label>
-                                                <input type="text" class="form-control"
-                                                    id="passanger_name_{{ $i }}" name="passanger_name[]"
-                                                    required placeholder="Passenger Name"
-                                                    data-label="Passenger
-                                                    Name {{ $i }}" />
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="passanger_phone_{{ $i }}"
-                                                    class="form-text font-weight-bold">Passenger
-                                                    Phone {{ $i }}<small
-                                                        class="text-danger font-weight-bolder">*</small></label>
-                                                <input type="tel" class="form-control"
-                                                    id="passanger_phone_{{ $i }}" name="passanger_phone[]"
-                                                    required placeholder="Passenger Phone"
-                                                    onkeypress="return onlyNumberKey(event)" />
+                                                <label for="special_area_id" class="form-text font-weight-bold">Private Drop
+                                                    Off (Optional)</label>
+                                                <select class="form-control" id="special_area_id" name="special_area_id">
+                                                    <option value="">None</option>
+                                                    @foreach ($special_areas as $s)
+                                                        <option value="{{ $s->id }}"
+                                                            data-first_person_price="{{ $s->first_person_price }}"
+                                                            data-extra_person_price="{{ $s->extra_person_price }}">
+                                                            {{ $s->regional_name }}</option>
+                                                    @endforeach
+                                                </select>
                                                 <span class="text-muted font-italic">
                                                     <small>
-                                                        Please fill in US phone number if available
+                                                        Additional $ 30 / $50 charges per address in Philadelphia city /
+                                                        Philadelphia suburb for the 1st passenger (+ $ 10 per passenger for
+                                                        the additional passenger)
                                                     </small>
                                                 </span>
                                             </div>
-                                            <hr />
-                                        @endfor
+                                            <div class="form-group">
+                                                <label for="special_area_detail"
+                                                    class="form-text font-weight-bold">Destination Address</label>
+                                                <textarea class="form-control" id="special_area_detail" name="special_area_detail"
+                                                    placeholder="Destination address including zip code"></textarea>
+                                            </div>
+                                        @endif
+
+                                        @if ($booking_type == 'shuttle')
+                                            <div class="form-group">
+                                                <label for="luggage_qty_return" class="form-text font-weight-bold">Luggage
+                                                    Qty</label>
+                                                <div class="input-group">
+                                                    <select class="form-control" id="luggage_qty_return" name="luggage_qty_return">
+                                                        @for ($i = 0; $i <= 50; $i++)
+                                                            <option value="{{ $i }}">{{ $i }}
+                                                            </option>
+                                                        @endfor
+                                                    </select>
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text bg-dark text-white">Pcs</span>
+                                                    </div>
+                                                </div>
+                                                <span class="text-muted font-italic">
+                                                    <small>
+                                                        Free of charge luggage max 2 pieces and 1 piece hand carry bag.
+                                                        Unusual and fragile luggage must be declared and confirmed.
+                                                        It will be rejected if not declared and confirmed
+                                                    </small>
+                                                </span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="overweight_luggage_qty_return"
+                                                    class="form-text font-weight-bold">Overweight/Oversized Luggage
+                                                    Qty</label>
+                                                <div class="input-group">
+                                                    <select class="form-control" id="overweight_luggage_qty_return"
+                                                        name="overweight_luggage_qty_return">
+                                                        @for ($i = 0; $i <= 50; $i++)
+                                                            <option value="{{ $i }}">{{ $i }}
+                                                            </option>
+                                                        @endfor
+                                                    </select>
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text bg-dark text-white">Pcs</span>
+                                                    </div>
+                                                    <span class="text-muted font-italic">
+                                                        <small>
+                                                            Boxes baggage will be considered as overweight/oversized.
+                                                            Max Weight luggage 50 lbs each, max dimension: L+W+H = 62 inch
+                                                            Hand carry bag max weight 15 lbs, max dimension 22"+14"+9"= 45"
+                                                        </small>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="flight_number_return" class="form-text font-weight-bold">Flight
+                                                Number</label>
+                                            <input type="text" class="form-control" id="flight_number_return"
+                                                name="flight_number_return" placeholder="Flight Number" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="flight_info" class="form-text font-weight-bold">Flight
+                                                Info</label>
+                                            <textarea class="form-control" id="flight_info_return" name="flight_info_return"
+                                                placeholder="Flight info ie: inform us your {{ $return_from_type == 'city' ? 'departure' : 'arrival' }} time or other info
+                                                "></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="notes" class="form-text font-weight-bold">Notes</label>
+                                            <textarea class="form-control" id="notes" name="notes"
+                                                placeholder="Pick up time (for Charter Service).Put your other notes here "></textarea>
+                                        </div>
                                     </div>
                                 </div>
 
                             </div>
                         </div>
+                        @endif
                     </div>
                     {{-- CARD IJO --}}
                     <div class="col-sm-12 col-md-4 mb-5">
                         <div class="card bg-success text-white">
                             <div class="card-body">
                                 <h3>Booking Detail</h3>
-                                <p class="text-capitalize">Booking Type: {{ $request->booking_type }}</p>
+                                <p class="text-capitalize">Booking Type: {{ $booking_type }}</p>
+                                @if($is_roundtrip == 1)
+                                <p>First From: {{ $from_main_name }} - {{ $from_sub_name }}</p>
+                                <p>First To: {{ $to_main_name }} - {{ $to_sub_name }}</p>
+                                <p>Second From: {{ $return_from_main_name }} - {{ $return_from_sub_name }}</p>
+                                <p>Second To: {{ $return_to_main_name }} - {{ $return_to_sub_name }}</p>
+                                @else
                                 <p>From: {{ $from_main_name }} - {{ $from_sub_name }}</p>
-                                <p>To: {{ $to_main_name }} - {{ $to_sub_name }}</p>
-                                <p {!! $destination_type !== 'city' ? 'style="display:none"' : '' !!}>Private Drop Off :
+                                <p>To: {{ $to_main_name }} - {{ $to_sub_name }}</p>                              
+                                @endif
+                                <p {!! $from_type == 'airport' && $return_from_type == 'airport' ? 'style="display:none"' : '' !!}>Private Drop Off :
                                     <span class="special_area_name">None</span>
                                 </p>
                                 <p>Date: {{ $date_time_departure }}</p>
-                                <p {!! $request->booking_type == 'shuttle' ? '' : 'style="display:none;"' !!}>Passenger:
-                                    {{ $passanger_adult }}
-                                    Adult {{ $passanger_baby }} Child</p>
-                                @if ($request->booking_type == 'shuttle')
+                                <p {!! $booking_type == 'shuttle' ? '' : 'style="display:none;"' !!}>Passenger:
+                                    {{ $passenger_adult }}
+                                    Adult {{ $passenger_baby }} Child</p>
+                                @if ($booking_type == 'shuttle')
                                     <p>Luggage: <span class="luggage_qty">0</span> Pcs</p>
                                     <p>Overweight or Oversized Luggage: <span class="overweight_luggage_qty">0</span>
                                         Pcs
@@ -249,11 +368,11 @@
                                         <tr>
                                             <td>
                                                 Base Price:<br />
-                                                @if ($request->booking_type == 'shuttle')
-                                                    {{ $passanger_total }} Passenger(s)
+                                                @if ($booking_type == 'shuttle')
+                                                    {{ $passenger_total }} Passenger(s)
                                                 @endif
-                                                <input type="hidden" name="passanger_total"
-                                                    value="{{ $passanger_total }}" />
+                                                <input type="hidden" name="passenger_total"
+                                                    value="{{ $passenger_total }}" />
                                             </td>
                                             <td class="text-right">
                                                 ${{ $base_price_total }}
@@ -261,7 +380,7 @@
                                                     value="{{ $base_price_total }}" />
                                             </td>
                                         </tr>
-                                        @if ($request->booking_type == 'shuttle')
+                                        @if ($booking_type == 'shuttle')
                                             <tr>
                                                 <td>
                                                     Special request drop off Price:<br />
@@ -403,36 +522,36 @@
         let
             xxx = []
 
-        let passanger_phone = document.querySelectorAll('input[type="tel"]');
-        for (i = 0; i < passanger_phone.length; i++) {
-            xxx[i] = window.intlTelInput(passanger_phone[i], option_tel);
+        let passenger_phone = document.querySelectorAll('input[type="tel"]');
+        for (i = 0; i < passenger_phone.length; i++) {
+            xxx[i] = window.intlTelInput(passenger_phone[i], option_tel);
         }
 
         $(document).ready(() => {
 
-            $('#same_passanger').on('change', () => {
-                if ($('#same_passanger:checked').val()) {
-                    $('#passanger_name_1').attr('readonly', true).val($('#customer_name').val()).addClass(
+            $('#same_passenger').on('change', () => {
+                if ($('#same_passenger:checked').val()) {
+                    $('#passenger_name_1').attr('readonly', true).val($('#customer_name').val()).addClass(
                         'bg-secondary text-white')
-                    $('#passanger_phone_1').attr('readonly', true).val($('#customer_phone').val()).addClass(
+                    $('#passenger_phone_1').attr('readonly', true).val($('#customer_phone').val()).addClass(
                         'bg-secondary text-white')
                 } else {
-                    $('#passanger_name_1').attr('readonly', false).val('').removeClass(
+                    $('#passenger_name_1').attr('readonly', false).val('').removeClass(
                         'bg-secondary text-white')
-                    $('#passanger_phone_1').attr('readonly', false).val('').removeClass(
+                    $('#passenger_phone_1').attr('readonly', false).val('').removeClass(
                         'bg-secondary text-white')
                 }
             })
 
             $('#customer_phone').on('keyup', e => {
-                if ($('#same_passanger:checked').val()) {
-                    $('#passanger_phone_1').val($('#customer_phone').val())
+                if ($('#same_passenger:checked').val()) {
+                    $('#passenger_phone_1').val($('#customer_phone').val())
                 }
             })
 
             $('#customer_name').on('keyup', e => {
-                if ($('#same_passanger:checked').val()) {
-                    $('#passanger_name_1').val($('#customer_name').val())
+                if ($('#same_passenger:checked').val()) {
+                    $('#passenger_name_1').val($('#customer_name').val())
                 }
             })
 
@@ -441,14 +560,14 @@
                 let special_area_name = $('#special_area_id :selected').text()
                 let first_person_price = $('#special_area_id :selected').data('first_person_price')
                 let extra_person_price = $('#special_area_id :selected').data('extra_person_price')
-                let passanger_total = $('input[name="passanger_total"]').val()
-                let passanger_first = 1
-                let passanger_extra = passanger_total - 1;
-                if (passanger_extra < 0) {
-                    passanger_extra = 0
+                let passenger_total = $('input[name="passenger_total"]').val()
+                let passenger_first = 1
+                let passenger_extra = passenger_total - 1;
+                if (passenger_extra < 0) {
+                    passenger_extra = 0
                 }
-                let a = passanger_first * first_person_price
-                let b = passanger_extra * extra_person_price
+                let a = passenger_first * first_person_price
+                let b = passenger_extra * extra_person_price
                 let c = a + b
                 let cFormated = new Intl.NumberFormat('en-US', {
                     style: 'currency',
@@ -470,17 +589,17 @@
 
             $('#luggage_qty').on('change', e => {
                 let luggage_qty = parseFloat($('#luggage_qty').val())
-                // let luggage_base_price = $('input[name="luggage_base_price"]').val()
-                let passanger_total = $('input[name="passanger_total"]').val()
+                let luggage_base_price = $('input[name="luggage_base_price"]').val()
+                let passenger_total = $('input[name="passenger_total"]').val()
                 let luggage_base_price = 20
 
                 let extra_luggage_qty = 0
                 let lp = 0
                 // lp = extra_luggage_qty *luggage_base_price
 
-                if (luggage_qty > (2 * passanger_total)) {
-                    lp = (luggage_qty - (2 * passanger_total)) * luggage_base_price
-                    extra_luggage_qty = luggage_qty - (2 * passanger_total)
+                if (luggage_qty > (2 * passenger_total)) {
+                    lp = (luggage_qty - (2 * passenger_total)) * luggage_base_price
+                    extra_luggage_qty = luggage_qty - (2 * passenger_total)
                 }
 
                 let lpFormated = new Intl.NumberFormat('en-US', {
@@ -509,6 +628,50 @@
                 $('.overweight_luggage_qty').text(overweight_luggage_qty)
                 $('input[name="overweight_luggage_price"]').val(olp)
                 $('#overweight_luggage_price').text(olpFormated)
+                generateGrandTotal()
+            })
+
+            $('#luggage_qty_return').on('change', e => {
+                let luggage_qty = parseFloat($('#luggage_qty_return').val())
+                let luggage_base_price = $('input[name="luggage_base_price_return"]').val()
+                let passenger_total = $('input[name="passenger_total"]').val()
+                let luggage_base_price = 20
+
+                let extra_luggage_qty = 0
+                let lp = 0
+                // lp = extra_luggage_qty *luggage_base_price
+
+                if (luggage_qty > (2 * passenger_total)) {
+                    lp = (luggage_qty - (2 * passenger_total)) * luggage_base_price
+                    extra_luggage_qty = luggage_qty - (2 * passenger_total)
+                }
+
+                let lpFormated = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(lp)
+                $('.extra_luggage_qty_return').text(extra_luggage_qty)
+                $('.luggage_qty_return').text(luggage_qty)
+                $('input[name="luggage_price"]').add(lp)
+                $('#luggage_price').text(lpFormated)
+                generateGrandTotal()
+            })
+
+            $('#overweight_luggage_qty_return').on('change', e => {
+                let overweight_luggage_qty = parseFloat($('#overweight_luggage_qty_return').val())
+                let overweight_luggage_base_price = 10
+
+                let olp = 0
+
+                olp = overweight_luggage_qty * overweight_luggage_base_price
+
+                let olpFormated = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(olp)
+                $('.overweight_luggage_qty_return').text(overweight_luggage_qty)
+                $('input[name="overweight_luggage_price_return"]').val(olp)
+                $('#overweight_luggage_price_return').text(olpFormated)
                 generateGrandTotal()
             })
 
@@ -551,7 +714,7 @@
 
                 }
 
-                let arrPassName = $("input[name='passanger_name[]']").map(function() {
+                let arrPassName = $("input[name='passenger_name[]']").map(function() {
                     var val = $(this).val();
                     var label = $(this).data("label")
 
@@ -687,16 +850,16 @@
         }
 
         function bookingNow() {
-            let arrPassangerName = $("input[name='passanger_name[]']").map(function() {
+            let arrpassengerName = $("input[name='passenger_name[]']").map(function() {
                 return $(this).val();
             }).get()
 
-            let arrPassangerPhone = [];
+            let arrpassengerPhone = [];
             xxx.forEach(function(i, k) {
                 // if (xxx[k].isValidNumber()) {
                 if (xxx[k]) {
                     if (xxx[k] != 0) {
-                        arrPassangerPhone.push(xxx[k].getNumber())
+                        arrpassengerPhone.push(xxx[k].getNumber())
                     }
                 } else {
                     Swal.fire({
@@ -711,10 +874,10 @@
                 }
             })
 
-            let arrPassanger = arrPassangerName.map((v, i) => {
+            let arrpassenger = arrpassengerName.map((v, i) => {
                 return {
                     name: v,
-                    phone: arrPassangerPhone[i],
+                    phone: arrpassengerPhone[i],
                 }
             })
 
@@ -725,15 +888,15 @@
                 dataType: 'json',
                 data: {
                     schedule_type: `{{ session('booking_type') }}`,
-                    from_type: `{{ session('from_type') }}`,
+                    //from_type: `{{ session('from_type') }}`,
                     schedule_id: `{{ session('schedule_id') }}`,
                     date_departure: `{{ session('date_departure') }}`,
                     from_master_area_id: `{{ session('from_master_area_id') }}`,
                     from_master_sub_area_id: `{{ session('from_master_sub_area_id') }}`,
                     to_master_area_id: `{{ session('to_master_area_id') }}`,
                     to_master_sub_area_id: `{{ session('to_master_sub_area_id') }}`,
-                    qty_adult: `{{ session('passanger_adult') }}`,
-                    qty_baby: `{{ session('passanger_baby') }}`,
+                    qty_adult: `{{ session('passenger_adult') }}`,
+                    qty_baby: `{{ session('passenger_baby') }}`,
                     special_request: ($('#special_area_id').val()) ? 1 : 0,
                     special_area_id: $('#special_area_id').val(),
                     special_area_detail: $('#special_area_detail').val(),
@@ -744,14 +907,12 @@
                     flight_info: $('#flight_info').val(),
                     notes: $('#notes').val(),
                     voucher_code: $('#voucher').val(),
-                    // agent_password: $('#agent_password').val(),
-                    // customer_phone: $('#customer_phone').val(),
-                    customer_phone: arrPassangerPhone[0],
+                    customer_phone: arrpassengerPhone[0],
                     customer_password: $('#customer_password').val(),
                     customer_name: $('#customer_name').val(),
                     customer_email: $('#customer_email').val(),
                     is_roundtrip: $('#is_roundtrip').val(),
-                    passanger: arrPassanger
+                    passenger: arrpassenger
                 },
                 beforeSend: function() {
                     $.blockUI()
@@ -780,30 +941,7 @@
                         showConfirmButton: false,
                         toast: true,
                         timer: 3000,
-                    }).then(() => {
-                        if (parseInt('{{ $is_roundtrip }}') && !parseInt('{{ $flagged }}')) {
-                            const token = '{{ $_token }}';
-                            const areaType = '{{ $from_type }}';
-                            const bookingType = '{{ $booking_type }}';
-                            const fromMasterSubAreaId = '{{ $from_master_sub_area_id_2 }}';
-                            const toMasterSubAreaId = '{{ $to_master_sub_area_id_2 }}';
-                            const dateDeparture = '{{ $date_departure_2 }}';
-                            const isRoundtrip = '{{ $is_roundtrip }}';
-                            const passangerAdult = '{{ $passanger_adult }}';
-                            const passangerBaby = '{{ $passanger_baby }}';
-
-                            const url =
-                                `/search?_token=${encodeURIComponent(token)}&area_type=${encodeURIComponent(areaType)}&booking_type=${encodeURIComponent(bookingType)}&from_master_sub_area_id=${encodeURIComponent(fromMasterSubAreaId)}&to_master_sub_area_id=${encodeURIComponent(toMasterSubAreaId)}&date_departure=${encodeURIComponent(dateDeparture)}&is_roundtrip=${encodeURIComponent(isRoundtrip)}&passanger_adult=${encodeURIComponent(passangerAdult)}&passanger_baby=${encodeURIComponent(passangerBaby)}&flagged=1&code1=${e.data.booking_number_encode}`;
-                            window.location.replace(url);
-                        } else if (parseInt('{{ $is_roundtrip }}') && parseInt('{{ $flagged }}')) {
-                            const code1 = '{{ isset($code1) ? $code1 : '' }}';
-
-                            window.open(`/booking/check?code=${e.data.booking_number_encode}`, '_blank');
-                            window.location.replace(`/booking/check?code=${code1}`);
-                        } else {
-                            window.location.replace(`/booking/check?code=${e.data.booking_number_encode}`);
-                        }
-                    });
+                    })
                 }
                 $.unblockUI()
             })
