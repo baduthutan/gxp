@@ -21,7 +21,7 @@
     <tbody>
         @foreach ($data as $booking)
             @php
-                $passanger = get_passenger($booking->booking_number)
+                $passenger = get_passenger($booking->booking_number)
             @endphp
             <tr>
                 <td>
@@ -40,7 +40,7 @@
                 <td>{{ $booking->qty_adult + $booking->qty_baby }}</td>
                 <td>{{ number_format($booking->luggage_qty, 2) }} Kg</td>
                 <td>{{ number_format($booking->overweight_luggage_qty, 2) }} Kg</td>
-                <td>{!! $passanger !!}{{ $booking->notes ? "\nnote : ". nl2br($booking->notes) : "" }}</td>
+                <td>{!! $passenger !!}{{ $booking->notes ? "\nnote : ". nl2br($booking->notes) : "" }}</td>
             </tr>
         @endforeach
     </tbody>

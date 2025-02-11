@@ -56,10 +56,10 @@
                                             <td>
                                                 Base Price:<br/>
                                                 @php
-                                                    $passanger_total = $bookings->qty_adult + $bookings->qty_baby;
+                                                    $passenger_total = $bookings->qty_adult + $bookings->qty_baby;
                                                 @endphp
                                                 @if ($bookings->booking_type == 'shuttle')
-                                                {{ $passanger_total }} Passenger(s)
+                                                {{ $passenger_total }} Passenger(s)
                                                 @endif
                                             </td>
                                             <td class="text-right">
@@ -79,8 +79,8 @@
                                             <td>
                                                 Extra Luggage Price:<br/>
                                                 @php
-                                                $passanger_total = $bookings->qty_adult + $bookings->qty_baby;
-                                                $extra_luggage = $bookings->luggage_qty - ($passanger_total*2);
+                                                $passenger_total = $bookings->qty_adult + $bookings->qty_baby;
+                                                $extra_luggage = $bookings->luggage_qty - ($passenger_total*2);
                                                 if ($extra_luggage < 0) $extra_luggage = 0;
                                                 @endphp
                                                 {{ $extra_luggage }} piece(s)

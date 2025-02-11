@@ -35,8 +35,8 @@ class BookingCharterController extends Controller
             $schedule_type = $key->schedule_type;
             $customer_phone = $key->customer_phone;
             $customer_name = $key->customer_name;
-            $passanger_phone = $key->passanger_phone;
-            $passanger_name = $key->passanger_name;
+            $passenger_phone = $key->passenger_phone;
+            $passenger_name = $key->passenger_name;
             $qty_adult = $key->qty_adult;
             $qty_baby = $key->qty_baby;
             $special_request = $key->special_request;
@@ -100,8 +100,8 @@ class BookingCharterController extends Controller
                 'schedule_type' => $schedule_type,
                 'customer_phone' => $customer_phone,
                 'customer_name' => $customer_name,
-                'passanger_phone' => $passanger_phone,
-                'passanger_name' => $passanger_name,
+                'passenger_phone' => $passenger_phone,
+                'passenger_name' => $passenger_name,
                 'qty_adult' => $qty_adult,
                 'qty_baby' => $qty_baby,
                 'special_request' => ($special_request) ? "Yes" : "No",

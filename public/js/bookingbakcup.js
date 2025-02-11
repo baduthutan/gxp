@@ -70,7 +70,7 @@ function initData() {
         to_master_area_id &&
         booking_type &&
         date_departure &&
-        passanger_adult
+        passenger_adult
     ) {
         $("#from_type").val(from_type);
 
@@ -281,8 +281,8 @@ function ajax_get_list_sub_area(selector_parent, selector_child) {
 function searchSchedule() {
     from_type = $("#from_type").val();
     date_departure = $("#date_departure").val();
-    passanger_adult = $("#passanger_adult").val();
-    passanger_baby = $("#passanger_baby").val();
+    passenger_adult = $("#passenger_adult").val();
+    passenger_baby = $("#passenger_baby").val();
     from_master_area_id = $("#from_master_area_id").val();
     from_master_sub_area_id = $("#from_master_sub_area_id").val();
     to_master_area_id = $("#to_master_area_id").val();
@@ -296,8 +296,8 @@ function searchSchedule() {
         data: {
             from_type: $("#from_type").val(),
             date_booking: $("#date_departure").val(),
-            qty_adult: $("#passanger_adult").val(),
-            qty_baby: $("#passanger_baby").val(),
+            qty_adult: $("#passenger_adult").val(),
+            qty_baby: $("#passenger_baby").val(),
             from_master_area_id: $("#from_master_area_id").val(),
             from_master_sub_area_id: $("#from_master_sub_area_id").val(),
             to_master_area_id: $("#to_master_area_id").val(),
@@ -367,8 +367,8 @@ function searchSchedule() {
                         <input type="hidden" name="to_master_sub_area_id" value="${to_master_sub_area_id}" />
                         <input type="hidden" name="booking_type" value="${booking_type}" />
                         <input type="hidden" name="date_departure" value="${date_departure}" />
-                        <input type="hidden" name="passanger_adult" value="${passanger_adult}" />
-                        <input type="hidden" name="passanger_baby" value="${passanger_baby}" />
+                        <input type="hidden" name="passenger_adult" value="${passenger_adult}" />
+                        <input type="hidden" name="passenger_baby" value="${passenger_baby}" />
                         <input type="hidden" name="special_area_id" value="${special_area_id}" />
                         <input type="hidden" name="schedule_id" value="${id}" />
                         <button type="submit" class="btn btn-primary ${disabled}" onclick="PreBooking(${id})">Booking</button>

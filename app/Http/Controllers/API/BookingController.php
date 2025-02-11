@@ -28,6 +28,7 @@ class BookingController extends BaseController
             $request->all(),
             [
                 'schedule_type'           => 'required|in:shuttle,charter',
+                'is_roundtrip'            => 'required|boolean',
                 'from_type'               => 'required|in:airport,city',
                 'schedule_id'             => 'required|integer',
                 'date_departure'          => 'required|date|after_or_equal:today|date_format:Y-m-d',
@@ -35,13 +36,13 @@ class BookingController extends BaseController
                 'from_master_sub_area_id' => 'nullable',
                 'to_master_area_id'       => 'required',
                 'to_master_sub_area_id'   => 'nullable',
-                'qty_adult'               => 'required|integer|min_digits:1',
-                'qty_baby'                => 'required|integer|min_digits:0',
+                'qty_adult'               => 'required|integer|min:1',
+                'qty_baby'                => 'required|integer|min:0',
                 'special_request'         => 'nullable|boolean',
                 'special_area_id'         => 'required_if:special_request,1',
                 'special_area_detail'     => 'nullable',
-                'luggage_qty'             => 'required_if:schedule_type,shuttle|integer|min_digits:0',
-                'overweight_luggage_qty'  => 'required_if:schedule_type,shuttle|integer|min_digits:0',
+                'luggage_qty'             => 'required_if:schedule_type,shuttle|integer|min:0',
+                'overweight_luggage_qty'  => 'required_if:schedule_type,shuttle|integer|min:0',
                 'flight_number'           => 'nullable',
                 'flight_info'             => 'nullable',
                 'notes'                   => 'nullable',
@@ -50,14 +51,29 @@ class BookingController extends BaseController
                 'customer_name'           => 'required|min:3|max:255',
                 'customer_email'          => 'nullable|min:3|max:100|email:rfc,dns',
                 'customer_password'       => 'required|min:4|max:50',
-                'passanger'               => 'required|array',
+                'passenger'               => 'required|array',
+
+                'return_schedule_id'             => 'required_if:is_roundtrip,1|integer',
+                'return_from_master_area_id'     => 'required_if:is_roundtrip,1',
+                'return_from_master_sub_area_id' => 'nullable',
+                'return_from_type'               => 'required_if:is_roundtrip,1|in:airport,city',
+                'return_to_master_area_id'       => 'required_if:is_roundtrip,1',
+                'return_to_master_sub_area_id'   => 'nullable',
+                'return_date'                    => 'required_if:is_roundtrip,1|date|after_or_equal:today|date_format:Y-m-d',
+                'return_special_request'         => 'nullable|boolean',
+                'return_special_area_id'         => 'required_if:return_special_request,1',
+                'return_special_area_detail'     => 'nullable',
+                'return_luggage_qty'             => 'required_if:is_roundtrip,1,schedule_type,shuttle|integer|min:0',
+                'return_overweight_luggage_qty'  => 'required_if:is_roundtrip,1,schedule_type,shuttle|integer|min:0',
+                'return_flight_number'           => 'nullable',
+                'return_flight_info'             => 'nullable',
+                'return_notes'                   => 'nullable',
             ],
             [
                 'exists' => ':attribute not found',
                 'in'     => ':attribute only accept value :values'
             ]
         );
-
         if ($validator->fails()) {
             $errors = $validator->errors();
             $error_message = "";
@@ -155,13 +171,9 @@ class BookingController extends BaseController
 
         // voucher & promo price
         if ($request->voucher_code) {
-            // if (!$request->agent_password) {
-            //     return $this->sendError("Agent Password is required", null);
-            // }
 
             $vouchers = Voucher::select([
                 'id',
-                // 'agent_id',
                 'discount_type',
                 'discount_value',
             ])->where([
@@ -174,18 +186,6 @@ class BookingController extends BaseController
             if (!$vouchers) {
                 return $this->sendError('Voucher not found or expired', null);
             }
-
-            // $agents = Agent::where('id', $vouchers->agent_id)->first();
-
-            // if (!$agents) {
-            //     return $this->sendError('Agent not found', null);
-            // }
-
-            // $agent_password = $agents->password;
-
-            // if ($agent_password != $request->agent_password) {
-            //     return $this->sendError("Agent Password wrong, please try again", null);
-            // }
 
             $voucher_id = $vouchers->id;
             $discount_type = $vouchers->discount_type;
@@ -234,18 +234,54 @@ class BookingController extends BaseController
             if ($can_book == false) {
                 return $this->sendError('No seat left', null);
             }
+            if($request->is_roundtrip == 1){
+                $return_schedules = ScheduleShuttle::select([
+                    'from_master_area.name as from_master_area_name',
+                    'to_master_area.name as to_master_area_name',
+                    'schedule_shuttles.*',
+                ])
+                    ->where([
+                        'schedule_shuttles.is_active' => true,
+                        'schedule_shuttles.id' => $request->return_schedule_id,
+                    ])
+                    ->leftJoin('master_areas as from_master_area', 'from_master_area.id', '=', 'schedule_shuttles.from_master_area_id')
+                    ->leftJoin('master_areas as to_master_area', 'to_master_area.id', '=', 'schedule_shuttles.to_master_area_id')
+                    ->first();
+                if (!$return_schedules) {
+                    return $this->sendError('Return Schedule not found, please try again', null);
+                } else {
+                    $dst = Dst::first();
+                    $nextDst = Dst::skip(1)->first();
+                    $timeDeparture = \Carbon\Carbon::parse($return_schedules->time_departure);
+                    if (\Carbon\Carbon::parse($request->date_departure)->between($dst->dst_start, $dst->dst_end)) {
+                        if ($timeDeparture->hour < 12) {
+                            $timeDeparture->addMinutes($dst->morning_schedule_time);
+                        } else {
+                            $timeDeparture->addMinutes($dst->afternoon_schedule_time);
+                        }
+                    }else if (\Carbon\Carbon::parse($request->date_departure)->between($nextDst->dst_start, $nextDst->dst_end)) {
+                        if ($timeDeparture->hour < 12) {
+                            $timeDeparture->addMinutes($nextDst->morning_schedule_time);
+                        } else {
+                            $timeDeparture->addMinutes($nextDst->afternoon_schedule_time);
+                        }
+                    }
+                    $return_schedules->time_departure = $timeDeparture->format('H:i');
+                }
 
-            // $luggage_base_price = (float)$schedules->luggage_price;
+                $return_can_book = $this->count_seat_avail($return_schedules->total_seat, $total_person);
+                if ($return_can_book == false) {
+                    return $this->sendError('No seat left (return)', null);
+                }
+            }
+
             $luggage_base_price            = 20;
             $overweight_luggage_base_price = 10;
 
-            // if ($request->luggage_qty > 20) {
-            //     $luggage_price = ceil((($request->luggage_qty - 20) / 20)) * $luggage_base_price;
-            // }
-            if ($request->luggage_qty > (2 * $total_person)) {
-                $luggage_price = ($request->luggage_qty - (2 * $total_person)) * $luggage_base_price;
+            if (($request->luggage_qty + $request->return_luggage_qty) > (2 * $total_person)) {
+                $luggage_price = (($request->luggage_qty + $request->return_luggage_qty) - (2 * $total_person)) * $luggage_base_price;
             }
-            $overweight_luggage_price = $request->overweight_luggage_qty * $overweight_luggage_base_price;
+            $overweight_luggage_price = ($request->overweight_luggage_qty + $request->return_overweight_luggage_qty) * $overweight_luggage_base_price;
 
             if ($request->special_request) {
                 $extra_prices = MasterSpecialArea::select([
@@ -268,9 +304,35 @@ class BookingController extends BaseController
                 }
             }
 
-            $base_price       = $schedules->price;
-            $total_base_price = $total_person * $schedules->price;
-            $sub_total_price  = $total_base_price + $luggage_price + $overweight_luggage_price + $extra_price;
+            if ($request->return_special_request) {
+                $return_extra_prices = MasterSpecialArea::select([
+                    'first_person_price',
+                    'extra_person_price'
+                ])->where([
+                    'is_active' => true,
+                    'id' => $request->return_special_area_id,
+                ])->get();
+
+                foreach ($return_extra_prices as $key) {
+                    $return_first_person_price = (float)$key->first_person_price;
+                    $return_extra_person_price = (float)$key->extra_person_price;
+
+                    if ($total_person == 1) {
+                        $return_extra_price = $return_first_person_price;
+                    } else {
+                        $return_extra_price = (($total_person - 1) * $return_extra_person_price) + $return_first_person_price;
+                    }
+                }
+            }
+
+            if($request->is_roundtrip == 1){
+                $base_price       = $schedules->price + $return_schedules->price;
+            }else{
+                $base_price       = $schedules->price;
+            }
+            
+            $total_base_price = $total_person * $base_price;
+            $sub_total_price  = $total_base_price + $luggage_price + $overweight_luggage_price + $extra_price + $return_extra_price;
 
             if ($voucher_id) {
                 if ($discount_type == "percentage") {
@@ -305,8 +367,31 @@ class BookingController extends BaseController
                 return $this->sendError('Charter data not found, please try again', null);
             }
 
+            if($request->is_roundtrip == 1){
+                $return_schedules = Charter::select([
+                    'from_master_area.name as from_master_area_name',
+                    'to_master_area.name as to_master_area_name',
+                    'charters.*',
+                ])
+                    ->where([
+                        // 'charters.is_available' => true,
+                        'charters.id' => $request->return_schedule_id,
+    //                    'DATE(charters.datetime_departure)' => $request->date_departure,
+                    ])
+                    ->leftJoin('master_areas as from_master_area', 'from_master_area.id', '=', 'charters.from_master_area_id')
+                    ->leftJoin('master_areas as to_master_area', 'to_master_area.id', '=', 'charters.to_master_area_id')
+                    ->first();
+                if (!$return_schedules) {
+                    return $this->sendError('Return Charter data not found, please try again', null);
+                }
+            }
+
             $base_price               = $schedules->price;
             $total_base_price         = $schedules->price;
+            if($request->is_roundtrip == 1){
+                $base_price          = $schedules->price + $return_schedules->price;
+                $total_base_price          = $schedules->price + $return_schedules->price;
+            }
             $luggage_price            = 0;
             $overweight_luggage_price = 0;
             $extra_price              = 0;
@@ -383,6 +468,62 @@ class BookingController extends BaseController
             $regional_name = MasterSpecialArea::where('id', $request->special_area_id)->first()->regional_name;
         }
 
+        if($request->is_roundtrip){
+            $return_from_master_sub_area_name = null;
+            $return_to_master_sub_area_name = null;
+            $return_regional_name = null;
+    
+            if ($return_schedules->from_master_area_id != $request->return_from_master_area_id) {
+                return $this->sendError('return_from_master_area_id schedule did not match', null);
+            }
+    
+            if ($return_schedules->to_master_area_id != $request->return_to_master_area_id) {
+                return $this->sendError('return_to_master_area_id schedule did not match', null);
+            }
+    
+            if ($request->return_from_type == "airport") {
+                if ($request->return_from_master_sub_area_id) {
+                    $return_from_sub = MasterSubArea::where('id', $request->return_from_master_sub_area_id)->where('master_area_id', $return_schedules->from_master_area_id)->first();
+                    if (!$return_from_sub) {
+                        return $this->sendError('return from sub area not found', null);
+                    }
+                    $return_from_master_sub_area_name = $return_from_sub->name;
+                }
+    
+                if ($request->return_to_master_sub_area_id != $return_schedules->to_master_sub_area_id) {
+                    return $this->sendError('return to sub area schedule did not match', null);
+                }
+    
+                $return_to_sub = MasterSubArea::where('id', $request->return_to_master_sub_area_id)->where('master_area_id', $return_schedules->to_master_area_id)->first();
+                if (!$return_to_sub) {
+                    return $this->sendError('return to sub area not found', null);
+                }
+                $return_to_master_sub_area_name = $return_to_sub->name;
+            } else {
+                if ($request->return_to_master_sub_area_id) {
+                    $return_to_sub = MasterSubArea::where('id', $request->return_to_master_sub_area_id)->where('master_area_id', $return_schedules->to_master_area_id)->first();
+                    if (!$return_to_sub) {
+                        return $this->sendError('return to sub area not found', null);
+                    }
+                    $return_to_master_sub_area_name = $return_to_sub->name;
+                }
+    
+                if ($request->return_from_master_sub_area_id != $return_schedules->from_master_sub_area_id) {
+                    return $this->sendError('return from sub area schedule did not match', null);
+                }
+    
+                $return_from_sub = MasterSubArea::where('id', $request->return_from_master_sub_area_id)->where('master_area_id', $return_schedules->from_master_area_id)->first();
+                if (!$return_from_sub) {
+                    return $this->sendError('return from sub area not found', null);
+                }
+                $return_from_master_sub_area_name = $return_from_sub->name;
+            }
+    
+            if ($request->return_special_request && $request->return_special_area_id) {
+                $return_regional_name = MasterSpecialArea::where('id', $request->return_special_area_id)->first()->regional_name;
+            }
+        }
+
         $fee_price   = (($sub_total_price * env('PAJAK')) / 100);
         $total_price = $sub_total_price + $fee_price;
 
@@ -441,11 +582,64 @@ class BookingController extends BaseController
         $booking_id = $booking->id;
         $booking_number = $booking->booking_number;
 
+        if($request->is_roundtrip == 1){
+            $return_booking                            = new Booking();
+            $return_booking->area_type                 = $request->return_from_type;
+
+            $return_booking->booking_number            = $booking_number;
+            $return_booking->schedule_id               = $request->return_schedule_id;
+            $return_booking->from_master_area_id       = $return_schedules->from_master_area_id;
+            $return_booking->from_master_area_name     = $return_schedules->from_master_area_name;
+            $return_booking->from_master_sub_area_id   = $request->return_from_master_sub_area_id;
+            $return_booking->from_master_sub_area_name = $return_from_master_sub_area_name;
+            $return_booking->to_master_area_id         = $return_schedules->to_master_area_id;
+            $return_booking->to_master_area_name       = $return_schedules->to_master_area_name;
+            $return_booking->to_master_sub_area_id     = $request->return_to_master_sub_area_id;
+            $return_booking->to_master_sub_area_name   = $return_to_master_sub_area_name;
+            $return_booking->vehicle_name              = $return_schedules->vehicle_name;
+            $return_booking->vehicle_number            = $return_schedules->vehicle_number;
+            $return_booking->datetime_departure        = $request->return_date_departure . " " . $return_schedules->time_departure;
+            $return_booking->schedule_type             = $request->schedule_type;
+            $return_booking->user_id                   = $user_id;
+            $return_booking->customer_phone            = $customer_phone;
+            $return_booking->customer_name             = $customer_name;
+            $return_booking->customer_email            = $customer_email;
+            $return_booking->qty_adult                 = $qty_adult;
+            $return_booking->qty_baby                  = $qty_baby;
+            $return_booking->base_price                = $base_price;
+            $return_booking->total_base_price          = $total_base_price;
+            $return_booking->flight_number             = ($request->return_flight_number) ?? null;
+            $return_booking->flight_info               = ($request->return_flight_info) ?? null;
+            $return_booking->notes                     = ($request->return_notes) ?? null;
+            $return_booking->luggage_qty               = ($request->return_luggage_qty) ?? 0;
+            $return_booking->luggage_price             = $luggage_price;
+            $return_booking->overweight_luggage_qty    = ($request->return_overweight_luggage_qty) ?? 0;
+            $return_booking->overweight_luggage_price  = $overweight_luggage_price;
+            $return_booking->special_request           = ($request->return_special_request) ?? false;
+            $return_booking->special_area_id           = ($request->return_special_area_id) ?? null;
+            $return_booking->special_area_detail       = ($request->return_special_area_detail) ?? null;
+            $return_booking->regional_name             = $return_regional_name;
+            $return_booking->extra_price               = $return_extra_price;
+            $return_booking->voucher_id                = $voucher_id;
+            $return_booking->promo_price               = $promo_price;
+            $return_booking->sub_total_price           = $sub_total_price;
+            $return_booking->fee_price                 = $fee_price;
+            $return_booking->total_price               = $total_price;
+            $return_booking->booking_status            = 'pending';
+            $return_booking->payment_status            = 'waiting';
+            $return_booking->payment_method            = null;
+            $return_booking->payment_token             = null;
+            $return_booking->total_payment             = $total_price;
+            $return_booking->trip_number               = !empty($return_schedules->trip_number) ? $return_schedules->trip_number : null;
+            $return_booking->save();
+            $booking_id = $return_booking->id;
+            $booking_number = $return_booking->booking_number;
+        }
         $data_customer = [];
-        $arr_passanger = $request->passanger;
-        for ($i = 0; $i < count($arr_passanger); $i++) {
-            $customer_name = $arr_passanger[$i]['name'];
-            $customer_phone = $arr_passanger[$i]['phone'];
+        $arr_passenger = $request->passenger;
+        for ($i = 0; $i < count($arr_passenger); $i++) {
+            $customer_name = $arr_passenger[$i]['name'];
+            $customer_phone = $arr_passenger[$i]['phone'];
             array_push($data_customer, [
                 'booking_id' => $booking_number,
                 'customer_name' => $customer_name,
@@ -489,7 +683,7 @@ class BookingController extends BaseController
             'customer_phone'            => $res->customer_phone,
             'customer_name'             => $res->customer_name,
             'customer_email'            => $res->customer_email,
-            'passanger'                 => $arr_passanger,
+            'passenger'                 => $arr_passenger,
             'qty_adult'                 => (int)$res->qty_adult,
             'qty_baby'                  => (int)$res->qty_baby,
             'base_price'                => (float)$res->base_price,

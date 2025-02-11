@@ -107,8 +107,8 @@ $(document).ready(function () {
 
         if (booking_type !== 'shuttle'){
             $('.passenger_adult_input').hide('fast')
-            $('#passanger_adult').prop("selectedIndex", 0);
-            $('#passanger_baby').prop("selectedIndex", 0);
+            $('#passenger_adult').prop("selectedIndex", 0);
+            $('#passenger_baby').prop("selectedIndex", 0);
             $('.passenger_baby_input').hide('fast')
             $('#alert-charter').show('fast')
         }else {
@@ -157,15 +157,15 @@ $(document).ready(function () {
         });
     })
 
-    $('#passanger_adult').on('change', function (e){
+    $('#passenger_adult').on('change', function (e){
         let val = $(this).val()
-        $("input[name='passanger_adult']").val(val)
+        $("input[name='passenger_adult']").val(val)
     })
 
-    $('#passanger_baby').on('change', function (e){
+    $('#passenger_baby').on('change', function (e){
         let val = $(this).val()
 
-        $("input[name='passanger_baby']").val(val)
+        $("input[name='passenger_baby']").val(val)
     })
 
 
@@ -233,7 +233,7 @@ function initData() {
         to_master_area_id &&
         booking_type &&
         date_departure &&
-        passanger_adult
+        passenger_adult
     ) {
         $("#from_type").val(from_type);
 
@@ -444,8 +444,8 @@ function initData() {
 // function searchSchedule() {
 //     from_type = $("#from_type").val();
 //     date_departure = $("#date_departure").val();
-//     passanger_adult = $("#passanger_adult").val();
-//     passanger_baby = $("#passanger_baby").val();
+//     passenger_adult = $("#passenger_adult").val();
+//     passenger_baby = $("#passenger_baby").val();
 //     from_master_area_id = $("#from_master_area_id").val();
 //     from_master_sub_area_id = $("#from_master_sub_area_id").val();
 //     to_master_area_id = $("#to_master_area_id").val();
@@ -459,8 +459,8 @@ function initData() {
 //         data: {
 //             from_type: $("#from_type").val(),
 //             date_booking: $("#date_departure").val(),
-//             qty_adult: $("#passanger_adult").val(),
-//             qty_baby: $("#passanger_baby").val(),
+//             qty_adult: $("#passenger_adult").val(),
+//             qty_baby: $("#passenger_baby").val(),
 //             from_master_area_id: $("#from_master_area_id").val(),
 //             from_master_sub_area_id: $("#from_master_sub_area_id").val(),
 //             to_master_area_id: $("#to_master_area_id").val(),
@@ -541,8 +541,8 @@ function initData() {
 //                         <input type="hidden" name="to_master_sub_area_id" value="${to_master_sub_area_id}" />
 //                         <input type="hidden" name="booking_type" value="${booking_type}" />
 //                         <input type="hidden" name="date_departure" value="${date_departure}" />
-//                         <input type="hidden" name="passanger_adult" value="${passanger_adult}" />
-//                         <input type="hidden" name="passanger_baby" value="${passanger_baby}" />
+//                         <input type="hidden" name="passenger_adult" value="${passenger_adult}" />
+//                         <input type="hidden" name="passenger_baby" value="${passenger_baby}" />
 //                         <input type="hidden" name="special_area_id" value="${special_area_id}" />
 //                         <input type="hidden" name="schedule_id" value="${id}" />
 //                         <button type="submit" class="btn text-white bg-success h-100 fs-14 shadow br-button text-uppercase ${disabled}" onclick="PreBooking(${id})">Booking</button>

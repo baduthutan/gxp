@@ -91,8 +91,8 @@
                                                 <td>{{ $booking['vehicle_number'] }}</td>
                                                 <td>{{ $booking['customer_phone'] }}</td>
                                                 <td>{{ $booking['customer_name'] }}</td>
-                                                <td>{{ $booking['passanger_phone'] }}</td>
-                                                <td>{{ $booking['passanger_name'] }}</td>
+                                                <td>{{ $booking['passenger_phone'] }}</td>
+                                                <td>{{ $booking['passenger_name'] }}</td>
                                                 <td>{{ $booking['qty_adult'] }}</td>
                                                 <td>{{ $booking['qty_baby'] }}</td>
                                                 <td>{{ $booking['flight_number'] }}</td>

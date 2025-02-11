@@ -232,9 +232,9 @@
                                     <div class="col-sm-12 col-md-6">
                                         @if ($return_from_type == 'airport')
                                             <div class="form-group">
-                                                <label for="special_area_id" class="form-text font-weight-bold">Private Drop
+                                                <label for="return_special_area_id" class="form-text font-weight-bold">Private Drop
                                                     Off (Optional)</label>
-                                                <select class="form-control" id="special_area_id" name="special_area_id">
+                                                <select class="form-control" id="return_special_area_id" name="return_special_area_id">
                                                     <option value="">None</option>
                                                     @foreach ($special_areas as $s)
                                                         <option value="{{ $s->id }}"
@@ -252,84 +252,75 @@
                                                 </span>
                                             </div>
                                             <div class="form-group">
-                                                <label for="special_area_detail"
+                                                <label for="return_special_area_detail"
                                                     class="form-text font-weight-bold">Destination Address</label>
-                                                <textarea class="form-control" id="special_area_detail" name="special_area_detail"
+                                                <textarea class="form-control" id="return_special_area_detail" name="return_special_area_detail"
                                                     placeholder="Destination address including zip code"></textarea>
                                             </div>
                                         @endif
 
                                         @if ($booking_type == 'shuttle')
-                                            <div class="form-group">
-                                                <label for="luggage_qty_return" class="form-text font-weight-bold">Luggage
-                                                    Qty</label>
-                                                <div class="input-group">
-                                                    <select class="form-control" id="luggage_qty_return" name="luggage_qty_return">
-                                                        @for ($i = 0; $i <= 50; $i++)
-                                                            <option value="{{ $i }}">{{ $i }}
-                                                            </option>
-                                                        @endfor
-                                                    </select>
-                                                    <div class="input-group-append">
-                                                        <span class="input-group-text bg-dark text-white">Pcs</span>
-                                                    </div>
+                                        <div class="form-group">
+                                            <label for="return_luggage_qty" class="form-text font-weight-bold">Luggage Qty</label>
+                                            <div class="input-group">
+                                                <select class="form-control" id="return_luggage_qty" name="return_luggage_qty">
+                                                    @for ($i = 0; $i <= 50; $i++)
+                                                        <option value="{{ $i }}">{{ $i }}</option>
+                                                    @endfor
+                                                </select>
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text bg-dark text-white">Pcs</span>
+                                                </div>
+                                            </div>
+                                            <span class="text-muted font-italic">
+                                                <small>
+                                                    Free of charge luggage max 2 pieces and 1 piece hand carry bag.
+                                                    Unusual and fragile luggage must be declared and confirmed.
+                                                    It will be rejected if not declared and confirmed.
+                                                </small>
+                                            </span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="return_overweight_luggage_qty" class="form-text font-weight-bold">Overweight/Oversized Luggage Qty</label>
+                                            <div class="input-group">
+                                                <select class="form-control" id="return_overweight_luggage_qty" name="return_overweight_luggage_qty">
+                                                    @for ($i = 0; $i <= 50; $i++)
+                                                        <option value="{{ $i }}">{{ $i }}</option>
+                                                    @endfor
+                                                </select>
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text bg-dark text-white">Pcs</span>
                                                 </div>
                                                 <span class="text-muted font-italic">
                                                     <small>
-                                                        Free of charge luggage max 2 pieces and 1 piece hand carry bag.
-                                                        Unusual and fragile luggage must be declared and confirmed.
-                                                        It will be rejected if not declared and confirmed
+                                                        Boxes baggage will be considered as overweight/oversized.
+                                                        Max Weight luggage 50 lbs each, max dimension: L+W+H = 62 inch.
+                                                        Hand carry bag max weight 15 lbs, max dimension 22"+14"+9" = 45".
                                                     </small>
                                                 </span>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="overweight_luggage_qty_return"
-                                                    class="form-text font-weight-bold">Overweight/Oversized Luggage
-                                                    Qty</label>
-                                                <div class="input-group">
-                                                    <select class="form-control" id="overweight_luggage_qty_return"
-                                                        name="overweight_luggage_qty_return">
-                                                        @for ($i = 0; $i <= 50; $i++)
-                                                            <option value="{{ $i }}">{{ $i }}
-                                                            </option>
-                                                        @endfor
-                                                    </select>
-                                                    <div class="input-group-append">
-                                                        <span class="input-group-text bg-dark text-white">Pcs</span>
-                                                    </div>
-                                                    <span class="text-muted font-italic">
-                                                        <small>
-                                                            Boxes baggage will be considered as overweight/oversized.
-                                                            Max Weight luggage 50 lbs each, max dimension: L+W+H = 62 inch
-                                                            Hand carry bag max weight 15 lbs, max dimension 22"+14"+9"= 45"
-                                                        </small>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @endif
+                                        </div>
+                                    @endif
                                     </div>
                                     <div class="col-sm-12 col-md-6">
                                         <div class="form-group">
-                                            <label for="flight_number_return" class="form-text font-weight-bold">Flight
-                                                Number</label>
-                                            <input type="text" class="form-control" id="flight_number_return"
-                                                name="flight_number_return" placeholder="Flight Number" />
+                                            <label for="return_flight_number" class="form-text font-weight-bold">Flight Number</label>
+                                            <input type="text" class="form-control" id="return_flight_number" name="return_flight_number" placeholder="Flight Number" />
                                         </div>
                                         <div class="form-group">
-                                            <label for="flight_info" class="form-text font-weight-bold">Flight
-                                                Info</label>
-                                            <textarea class="form-control" id="flight_info_return" name="flight_info_return"
-                                                placeholder="Flight info ie: inform us your {{ $return_from_type == 'city' ? 'departure' : 'arrival' }} time or other info
-                                                "></textarea>
+                                            <label for="return_flight_info" class="form-text font-weight-bold">Flight Info</label>
+                                            <textarea class="form-control" id="return_flight_info" name="return_flight_info"
+                                                placeholder="Flight info ie: inform us your {{ $return_from_type == 'city' ? 'departure' : 'arrival' }} time or other info">
+                                            </textarea>
                                         </div>
                                         <div class="form-group">
-                                            <label for="notes" class="form-text font-weight-bold">Notes</label>
-                                            <textarea class="form-control" id="notes" name="notes"
-                                                placeholder="Pick up time (for Charter Service).Put your other notes here "></textarea>
+                                            <label for="return_notes" class="form-text font-weight-bold">Notes</label>
+                                            <textarea class="form-control" id="return_notes" name="return_notes"
+                                                placeholder="Pick up time (for Charter Service). Put your other notes here">
+                                            </textarea>
                                         </div>
                                     </div>
-                                </div>
-
+                                </div>                                    
                             </div>
                         </div>
                         @endif
@@ -737,7 +728,6 @@
 
                     return $(this).val();
                 }).get()
-
                 bookingNow()
             })
         })
@@ -888,7 +878,6 @@
                 dataType: 'json',
                 data: {
                     schedule_type: `{{ session('booking_type') }}`,
-                    //from_type: `{{ session('from_type') }}`,
                     schedule_id: `{{ session('schedule_id') }}`,
                     date_departure: `{{ session('date_departure') }}`,
                     from_master_area_id: `{{ session('from_master_area_id') }}`,
@@ -912,6 +901,23 @@
                     customer_name: $('#customer_name').val(),
                     customer_email: $('#customer_email').val(),
                     is_roundtrip: $('#is_roundtrip').val(),
+
+                    return_schedule_id: `{{ session('return_schedule_id') }}`,
+                    return_from_master_area_id: `{{ session('return_from_master_area_id') }}`,
+                    return_from_master_sub_area_id: `{{ session('return_from_master_sub_area_id') }}`,
+                    return_from_type: `{{ session('return_from_type') }}`,
+                    return_to_master_area_id: `{{ session('return_to_master_area_id') }}`,
+                    return_to_master_sub_area_id: `{{ session('return_to_master_sub_area_id') }}`,
+                    return_date: `{{ session('return_date') }}`,
+                    return_special_request: ($('#return_special_area_id').val()) ? 1 : 0,
+                    return_special_area_id: $('#return_special_area_id').val(),
+                    return_special_area_detail: $('#return_special_area_detail').val(),
+                    return_luggage_qty: $('#return_luggage_qty').length === 0 ? 0 : $('#return_luggage_qty').val(),
+                    return_overweight_luggage_qty: $('#return_overweight_luggage_qty').length === 0 ? 0 : $('#return_overweight_luggage_qty').val(),
+                    return_flight_number: $('#return_flight_number').val(),
+                    return_flight_info: $('#return_flight_info').val(),
+                    return_notes: $('#return_notes').val(),
+
                     passenger: arrpassenger
                 },
                 beforeSend: function() {

@@ -62,7 +62,7 @@
                             <tr>
                                 <td style="width:30%">Total Seat</td>
                                 <td style="width:2%">:</td>
-                                <td>Up to {{ $charter->total_seat }} Passangers</td>
+                                <td>Up to {{ $charter->total_seat }} passengers</td>
                             </tr>
                         </table>
                     </td>

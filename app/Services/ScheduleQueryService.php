@@ -53,10 +53,10 @@ class ScheduleQueryService
             $data->map(function ($item) use ($request) {
                 $item->is_available = true;
 
-                $total_passanger = $request->passanger_adult + $request->passanger_baby;
+                $total_passenger = $request->passenger_adult + $request->passenger_baby;
                 $total_booked = $item->seat_booked;
 
-                if (($total_passanger  + $total_booked ) > $item->total_seat){
+                if (($total_passenger  + $total_booked ) > $item->total_seat){
                     $item->is_available = false;
                 }
 

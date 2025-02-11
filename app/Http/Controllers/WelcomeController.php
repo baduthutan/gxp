@@ -601,6 +601,11 @@ class WelcomeController extends Controller
         
 
         // Access nested data
+        $schedule_id = $departure_schedule->id;
+        $from_master_area_id = $departure_schedule->from_master_area->id;
+        $from_master_sub_area_id = $departure_schedule->from_master_sub_area_id;
+        $to_master_area_id = $departure_schedule->to_master_area->id;
+        $to_master_sub_area_id = $departure_schedule->to_master_sub_area->id;
         $from_master_area = $departure_schedule->from_master_area->name;
         $from_master_sub_area = $departure_schedule->from_master_sub_area->name ?? '';
         $from_type = $departure_schedule->from_master_area->area_type;
@@ -617,11 +622,30 @@ class WelcomeController extends Controller
         $passenger_adult = $request->passenger_adult ?? 1;
         $passenger_baby = $request->passenger_baby ?? 0;
 
+        session([
+            'schedule_id' => $schedule_id,
+            'from_type' => $from_type,
+            'from_master_area_id' => $from_master_area_id,
+            'from_master_sub_area_id' => $from_master_sub_area_id,
+            'to_master_area_id' => $to_master_area_id,
+            'to_master_sub_area_id' => $to_master_sub_area_id,
+            'booking_type' => $booking_type,
+            'date_departure' => $date_departure,
+            'passenger_adult' => $passenger_adult,
+            'passenger_baby' => $passenger_baby,
+            'is_roundtrip' => $is_roundtrip
+        ]);
+
         if($is_roundtrip == 1){
             $request->validate([
                 'return_schedule' => 'required|json',
             ]);
             $return_schedule = json_decode($request->return_schedule) ?? '';
+            $return_schedule_id = $return_schedule->id;
+            $return_from_master_area_id = $departure_schedule->from_master_area->id;
+            $return_from_master_sub_area_id = $departure_schedule->from_master_sub_area->id;
+            $return_to_master_area_id = $departure_schedule->to_master_area->id;
+            $return_to_master_sub_area_id = $departure_schedule->to_master_sub_area->id;
             $return_from_master_area = $return_schedule->from_master_area->name;
             $return_from_master_sub_area = $return_schedule->from_master_sub_area->name ?? '';
             $return_from_type = $return_schedule->from_master_area->area_type;
@@ -630,21 +654,16 @@ class WelcomeController extends Controller
             $base_price = $departure_schedule->price + $return_schedule->price;
             $return_luggage_price = $return_schedule->luggage_price;
             $date_return = $request->date_departure_2;
+            session([
+                'return_schedule_id' => $return_schedule_id,
+                'return_from_master_area_id' => $return_from_master_area_id,
+                'return_from_master_sub_area_id' => $return_from_master_sub_area_id,
+                'return_from_type' => $return_from_type,
+                'return_to_master_area_id' => $return_to_master_area_id,
+                'return_to_master_sub_area_id' => $return_to_master_sub_area_id,
+                'return_date' => $date_return
+            ]);
         }
-
-        session([
-            'from_type' => $from_type,
-            'from_master_area' => $from_master_area,
-            'from_master_sub_area' => $from_master_sub_area,
-            'to_master_area' => $to_master_area,
-            'to_master_sub_area' => $to_master_sub_area,
-            'booking_type' => $booking_type,
-            'date_departure' => $date_departure,
-            'passenger_adult' => $passenger_adult,
-            'passenger_baby' => $passenger_baby,
-            'is_roundtrip' => $is_roundtrip
-        ]);
-
         if ($booking_type == "shuttle") {  
             $datetime_format = 'Y M d h:i A';
         } else {
