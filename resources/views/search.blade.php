@@ -165,7 +165,7 @@
                                     <input type="hidden" name="passenger_baby" value="{{ $passenger_baby }}" />
                                     <input type="hidden" name="is_roundtrip" value="{{ $is_roundtrip }}" />
                                     @if ($is_roundtrip)
-                                        <input type="hidden" name="date_departure" value="{{ $date_departure_2 }}" />
+                                        <input type="hidden" name="date_departure_2" value="{{ $date_departure_2 }}" />
                                         <input type="hidden" name="return_schedule" id="return_schedule"
                                             value="">
                                     @endif

@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
 
-    <link rel="stylesheet" href="intl-tel-input-master/css/intlTelInput.css">
+    <link rel="stylesheet" href="/intl-tel-input-master/css/intlTelInput.css">
     <!-- owl carousel css -->
     <link rel="stylesheet" href="/css/owl.carousel.min.css ">
     <!-- font awesome icons -->
@@ -47,7 +47,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="img/favicon/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon/favicon-16x16.png">
-    <link rel="manifest" href="img/favicon/manifest.json">
+    <link rel="manifest" href="/img/favicon/manifest.json">
     <meta name="msapplication-TileColor" content="#02E602">
     <meta name="msapplication-TileImage" content="img/favicon/ms-icon-144x144.png">
     <meta name="theme-color" content="#02E602">
@@ -143,15 +143,15 @@
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
     </script>
     <!-- bootstrap js -->
-    <script src="js/bootstrap4.6.0.min.js"></script>
+    <script src="/js/bootstrap4.6.0.min.js"></script>
     <!-- owl carousel js -->
-    <script src="js/owl.carousel.min.js"></script>
+    <script src="/js/owl.carousel.min.js"></script>
     <!-- ScrollIt js -->
-    <script src="js/scrollIt.min.js"></script>
+    <script src="/js/scrollIt.min.js"></script>
     <!-- sweetalert2 -->
-    <script src="js/sweetalert2.all.min.js"></script>
+    <script src="/js/sweetalert2.all.min.js"></script>
     <!-- blockui -->
-    <script src="js/jquery.blockUI.js"></script>
+    <script src="/js/jquery.blockUI.js"></script>
     {{-- slick js --}}
     <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     {{-- choice js --}}

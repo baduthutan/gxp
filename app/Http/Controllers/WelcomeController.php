@@ -642,16 +642,16 @@ class WelcomeController extends Controller
             ]);
             $return_schedule = json_decode($request->return_schedule) ?? '';
             $return_schedule_id = $return_schedule->id;
-            $return_from_master_area_id = $departure_schedule->from_master_area->id;
-            $return_from_master_sub_area_id = $departure_schedule->from_master_sub_area->id;
-            $return_to_master_area_id = $departure_schedule->to_master_area->id;
-            $return_to_master_sub_area_id = $departure_schedule->to_master_sub_area->id;
+            $return_from_master_area_id = $return_schedule->from_master_area->id;
+            $return_from_master_sub_area_id = $return_schedule->from_master_sub_area->id;
+            $return_to_master_area_id = $return_schedule->to_master_area->id;
+            $return_to_master_sub_area_id = $return_schedule->to_master_sub_area->id;
             $return_from_master_area = $return_schedule->from_master_area->name;
             $return_from_master_sub_area = $return_schedule->from_master_sub_area->name ?? '';
             $return_from_type = $return_schedule->from_master_area->area_type;
             $return_to_master_area = $return_schedule->to_master_area->name;
             $return_to_master_sub_area = $return_schedule->to_master_sub_area->name ?? '';
-            $base_price = $departure_schedule->price + $return_schedule->price;
+            $base_price = $return_schedule->price + $return_schedule->price;
             $return_luggage_price = $return_schedule->luggage_price;
             $date_return = $request->date_departure_2;
             session([
@@ -744,105 +744,43 @@ class WelcomeController extends Controller
         return view('booking', $data);
     }
 
-
-    public function booking_checks(Request $request)
-    {
-        $code1 = urldecode($request->code1);
-        $code2 = urldecode($request->code2);
-        
-        $pages = Page::get();
-
-        $booking1 = Booking::where('booking_number', $code1)->first();
-        $booking2 = Booking::where('booking_number', $code2)->first();
-
-        if (!$booking1 && !$booking2) {
-            $data = [
-                'title' => 'Booking Not Found',
-                'app_name' => env('APP_NAME'),
-                'pages' => $pages,
-            ];
-            return view('booking_not_found', $data);
-        }
-
-        if ($booking1 && !$booking2) {
-            $vouchers = Voucher::where('id', $booking1->voucher_id)->first();
-            $data = [
-                'title' => 'Booking Check',
-                'app_name' => env('APP_NAME'),
-                'pages' => $pages,
-                'bookings' => $booking1,
-                'vouchers' => $vouchers,
-                'hashed_code' => encrypt($booking1->booking_number),
-            ];
-
-            return view('check', $data);
-        }
-
-        if (!$booking1 && $booking2) {
-            $vouchers = Voucher::where('id', $booking2->voucher_id)->first();
-            $data = [
-                'title' => 'Booking Check',
-                'app_name' => env('APP_NAME'),
-                'pages' => $pages,
-                'bookings' => $booking2,
-                'vouchers' => $vouchers,
-                'hashed_code' => encrypt($booking2->booking_number),
-            ];
-
-            return view('check', $data);
-        }
-
-        if ($booking1 && $booking2) {
-            $vouchers1 = Voucher::where('id', $booking1->voucher_id)->first();
-            $vouchers2 = Voucher::where('id', $booking2->voucher_id)->first();
-            $data = [
-                'title' => 'Bookings Check',
-                'app_name' => env('APP_NAME'),
-                'pages' => $pages,
-                'booking1' => $booking1,
-                'booking2' => $booking2,
-                'vouchers1' => $vouchers1,
-                'vouchers2' => $vouchers2,
-                'hashed_code1' => encrypt($booking1->booking_number),
-                'hashed_code2' => encrypt($booking2->booking_number),
-            ];
-
-            return view('checks', $data);
-        }
-    }
-
-    // stripe logic starts here
     public function booking_check(Request $request)
     {
         $encode = $request->code;
         $decode = urldecode($encode);
         $pages = Page::get();
-
-        $bookings = Booking::where('booking_number', $decode)->first();
-
-        if (!$bookings) {
+    
+        $bookings = Booking::where('booking_number', $decode)
+                            ->orderBy('datetime_departure', 'asc')
+                            ->get();
+    
+        if ($bookings->isEmpty()) {
             $data = [
-                'title' => 'Booking Check',
+                'title'    => 'Booking Check',
                 'app_name' => env('APP_NAME'),
-                'pages' => $pages,
+                'pages'    => $pages,
                 'bookings' => $bookings,
             ];
             return view('booking_not_found', $data);
         }
 
-        $vouchers = Voucher::where('id', $bookings->voucher_id)->first();
-
+        $booking = $bookings->first();
+        $return_booking = $bookings->count() > 1 ? $bookings->last() : null;
+    
+        $voucher = Voucher::where('id', $booking->voucher_id)->first();
+    
         $data = [
-            'title' => 'Booking Check',
-            'app_name' => env('APP_NAME'),
-            'pages' => $pages,
-            'bookings' => $bookings,
-            'vouchers' => $vouchers,
-            'hashed_code' => encrypt($bookings->booking_number),
+            'title'         => 'Booking Check',
+            'app_name'      => env('APP_NAME'),
+            'pages'         => $pages,
+            'booking'       => $booking,
+            'return_booking'=> $return_booking,
+            'voucher'      => $voucher,
+            'hashed_code'   => encrypt($booking->booking_number),
         ];
-
+    
         return view('check', $data);
-    }
+    }  
 
     public function booking_ticket(Request $request)
     {

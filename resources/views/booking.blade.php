@@ -43,6 +43,7 @@
     @endif --}}
     <section id="booking" class="booking section-padding" data-scroll-index="1">
         <form id="form_booking">
+            @csrf
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-12 col-md-8 mb-5">
@@ -578,91 +579,79 @@
                 }
             })
 
-            $('#luggage_qty').on('change', e => {
-                let luggage_qty = parseFloat($('#luggage_qty').val())
-                let luggage_base_price = $('input[name="luggage_base_price"]').val()
+            $('#return_special_area_id').on('change', e => {
+                let special_area_id = $('#return_special_area_id :selected').val()
+                let special_area_name = $('#return_special_area_id :selected').text()
+                let first_person_price = $('#return_special_area_id :selected').data('first_person_price')
+                let extra_person_price = $('#return_special_area_id :selected').data('extra_person_price')
                 let passenger_total = $('input[name="passenger_total"]').val()
-                let luggage_base_price = 20
-
-                let extra_luggage_qty = 0
-                let lp = 0
-                // lp = extra_luggage_qty *luggage_base_price
-
-                if (luggage_qty > (2 * passenger_total)) {
-                    lp = (luggage_qty - (2 * passenger_total)) * luggage_base_price
-                    extra_luggage_qty = luggage_qty - (2 * passenger_total)
+                let passenger_first = 1
+                let passenger_extra = passenger_total - 1;
+                if (passenger_extra < 0) {
+                    passenger_extra = 0
                 }
-
-                let lpFormated = new Intl.NumberFormat('en-US', {
+                let a = passenger_first * first_person_price
+                let b = passenger_extra * extra_person_price
+                let c = a + b
+                let cFormated = new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'USD'
-                }).format(lp)
-                $('.extra_luggage_qty').text(extra_luggage_qty)
-                $('.luggage_qty').text(luggage_qty)
-                $('input[name="luggage_price"]').val(lp)
-                $('#luggage_price').text(lpFormated)
-                generateGrandTotal()
+                }).format(c)
+
+                if (special_area_id) {
+                    $('.special_area_name').text(special_area_name)
+                    $('#special_area_price').text(cFormated)
+                    $('input[name="special_area_price"]').val(c)
+                    generateGrandTotal()
+                } else {
+                    $('.special_area_name').text('-')
+                    $('#special_area_price').text('$0')
+                    $('input[name="special_area_price"]').val(0)
+                    generateGrandTotal()
+                }
             })
 
-            $('#overweight_luggage_qty').on('change', e => {
+            $('#luggage_qty, #return_luggage_qty').on('change', () => {
+                let departureQty = parseFloat($('#luggage_qty').val()) || 0;
+                let returnQty = parseFloat($('#return_luggage_qty').val()) || 0;
+                let passengerTotal = parseFloat($('input[name="passenger_total"]').val()) || 0;
+                let basePrice = parseFloat($('input[name="luggage_base_price"]').val()) || 0;
+
+                let extraDeparture = departureQty > (2 * passengerTotal) ? departureQty - (2 * passengerTotal) : 0;
+                let extraReturn = returnQty > (2 * passengerTotal) ? returnQty - (2 * passengerTotal) : 0;
+                let totalExtraLuggage = extraDeparture + extraReturn;
+                let totalLuggageFee = totalExtraLuggage * basePrice;
+
+                let formattedFee = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(totalLuggageFee);
+
+                $('.extra_luggage_qty').text(totalExtraLuggage);
+                $('.luggage_qty').text(departureQty);
+                $('.return_luggage_qty').text(returnQty);
+                $('input[name="luggage_price"]').val(totalLuggageFee);
+                $('#luggage_price').text(formattedFee);
+
+                generateGrandTotal();
+            });
+
+            $('#overweight_luggage_qty, #return_overweight_luggage_qty').on('change', e => {
                 let overweight_luggage_qty = parseFloat($('#overweight_luggage_qty').val())
+                let return_overweight_luggage_qty = parseFloat($('#return_overweight_luggage_qty').val())
                 let overweight_luggage_base_price = 10
 
                 let olp = 0
 
-                olp = overweight_luggage_qty * overweight_luggage_base_price
+                olp = (overweight_luggage_qty + return_overweight_luggage_qty) * overweight_luggage_base_price
 
                 let olpFormated = new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'USD'
                 }).format(olp)
-                $('.overweight_luggage_qty').text(overweight_luggage_qty)
+                $('.overweight_luggage_qty').text(overweight_luggage_qty + return_overweight_luggage_qty)
                 $('input[name="overweight_luggage_price"]').val(olp)
                 $('#overweight_luggage_price').text(olpFormated)
-                generateGrandTotal()
-            })
-
-            $('#luggage_qty_return').on('change', e => {
-                let luggage_qty = parseFloat($('#luggage_qty_return').val())
-                let luggage_base_price = $('input[name="luggage_base_price_return"]').val()
-                let passenger_total = $('input[name="passenger_total"]').val()
-                let luggage_base_price = 20
-
-                let extra_luggage_qty = 0
-                let lp = 0
-                // lp = extra_luggage_qty *luggage_base_price
-
-                if (luggage_qty > (2 * passenger_total)) {
-                    lp = (luggage_qty - (2 * passenger_total)) * luggage_base_price
-                    extra_luggage_qty = luggage_qty - (2 * passenger_total)
-                }
-
-                let lpFormated = new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD'
-                }).format(lp)
-                $('.extra_luggage_qty_return').text(extra_luggage_qty)
-                $('.luggage_qty_return').text(luggage_qty)
-                $('input[name="luggage_price"]').add(lp)
-                $('#luggage_price').text(lpFormated)
-                generateGrandTotal()
-            })
-
-            $('#overweight_luggage_qty_return').on('change', e => {
-                let overweight_luggage_qty = parseFloat($('#overweight_luggage_qty_return').val())
-                let overweight_luggage_base_price = 10
-
-                let olp = 0
-
-                olp = overweight_luggage_qty * overweight_luggage_base_price
-
-                let olpFormated = new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD'
-                }).format(olp)
-                $('.overweight_luggage_qty_return').text(overweight_luggage_qty)
-                $('input[name="overweight_luggage_price_return"]').val(olp)
-                $('#overweight_luggage_price_return').text(olpFormated)
                 generateGrandTotal()
             })
 
@@ -880,6 +869,7 @@
                     schedule_type: `{{ session('booking_type') }}`,
                     schedule_id: `{{ session('schedule_id') }}`,
                     date_departure: `{{ session('date_departure') }}`,
+                    from_type: `{{ session('from_type') }}`,
                     from_master_area_id: `{{ session('from_master_area_id') }}`,
                     from_master_sub_area_id: `{{ session('from_master_sub_area_id') }}`,
                     to_master_area_id: `{{ session('to_master_area_id') }}`,
@@ -947,6 +937,8 @@
                         showConfirmButton: false,
                         toast: true,
                         timer: 3000,
+                    }).then(() => {
+                        window.location.replace(`/booking/check?code=${e.data.booking_number_encode}`);
                     })
                 }
                 $.unblockUI()
